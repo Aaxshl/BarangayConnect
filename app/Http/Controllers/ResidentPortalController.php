@@ -1,45 +1,65 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{Resident, CitizenRequest, Document, Announcement};
+use App\Models\{Resident, CitizenRequest, Document, Announcement, Setting, Household};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class ResidentPortalController extends Controller {
     public function home() {
-        $announcements = Announcement::where('status','published')->latest()->limit(4)->get();
-        return view('resident.home', compact('announcements'));
+        $announcements = Announcement::where('status','published')->latest()->limit(6)->get();
+        $settings = Setting::all()->pluck('value','key')->toArray();
+        return view('resident.home', compact('announcements', 'settings'));
     }
-    public function login() { return view('resident.login'); }
-    public function doLogin(Request $request) {
-        $request->validate(['contact_number' => 'required','password' => 'required']);
-        $resident = Resident::where('contact_number',$request->contact_number)->first();
-        if (!$resident || !Hash::check($request->password, $resident->password ?? '')) {
-            return back()->withErrors(['contact_number' => 'Invalid credentials.']);
-        }
-        session(['resident_id' => $resident->id]);
-        return redirect()->route('portal.dashboard');
+    public function login() { 
+        return redirect()->route('login'); 
     }
-    public function logout(Request $request) {
-        session()->forget('resident_id');
-        return redirect()->route('portal.login');
+    public function doLogin(Request $request) { 
+        return app(AuthController::class)->login($request); 
     }
-    public function register() { return view('resident.register'); }
+    public function logout(Request $request) { 
+        return app(AuthController::class)->logout($request); 
+    }
+    public function register() { 
+        $households = Household::orderBy('household_id')->get();
+        $settings = Setting::all()->pluck('value','key')->toArray();
+        return view('resident.register', compact('households', 'settings')); 
+    }
     public function storeRegister(Request $request) {
         $validated = $request->validate([
             'first_name'     => 'required|string|max:100',
             'last_name'      => 'required|string|max:100',
+            'middle_name'    => 'nullable|string|max:100',
             'birthdate'      => 'required|date|before:today',
             'gender'         => 'required|in:male,female',
-            'civil_status'   => 'required',
-            'address'        => 'required|string',
-            'contact_number' => 'required|unique:residents,contact_number',
-            'password'       => 'required|min:8|confirmed',
+            'civil_status'   => 'required|in:single,married,widowed,separated',
+            'address'        => 'required|string|max:255',
+            'purok'          => 'nullable|string|max:100',
+            'zone'           => 'nullable|string|max:100',
+            'contact_number' => 'required|string|max:20|unique:residents,contact_number',
+            'occupation'     => 'nullable|string|max:100',
+            'household_id'   => 'nullable|exists:households,id',
+            'photo'          => 'nullable|image|max:2048',
+            'password'       => 'required|min:6|confirmed',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('residents', 'public');
+        }
+
+        if (!empty($validated['birthdate'])) {
+            $validated['age'] = Carbon::parse($validated['birthdate'])->age;
+        }
+
         $validated['password'] = Hash::make($validated['password']);
         $validated['status']   = 'active';
         $resident = Resident::create($validated);
+
+        $qrData = 'RES-' . str_pad($resident->id, 5, '0', STR_PAD_LEFT);
+        $resident->update(['qr_code' => $qrData]);
+
         session(['resident_id' => $resident->id]);
-        return redirect()->route('portal.dashboard');
+        return redirect()->route('portal.dashboard')->with('success', 'Account registered successfully! Welcome to your resident dashboard.');
     }
     public function dashboard() {
         $resident = $this->getResident();

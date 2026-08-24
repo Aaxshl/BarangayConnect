@@ -20,8 +20,8 @@
     <div class="sidebar-brand">
         <div class="brand-icon"><i class="ti ti-building-community"></i></div>
         <div>
-            <div class="brand-name">SmartBarangay</div>
-            <div class="brand-sub">{{ \App\Models\Setting::get('barangay_name','Barangay') }}</div>
+            <div class="brand-name">{{ \App\Models\Setting::get('system_name', 'BarangayConnect') }}</div>
+            <div class="brand-sub">{{ \App\Models\Setting::get('barangay_name', 'Barangay') }}</div>
         </div>
     </div>
 

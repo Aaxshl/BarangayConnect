@@ -57,8 +57,8 @@
                 <i class="ti ti-building-community"></i>
             </div>
             <div>
-                <div style="font-weight:700;font-size:14px;color:#1a3a6b;line-height:1.1">SmartBarangay</div>
-                <div style="font-size:11px;color:#888">Resident Portal</div>
+                <div style="font-weight:700;font-size:14px;color:#1a3a6b;line-height:1.1">{{ \App\Models\Setting::get('system_name', 'BarangayConnect') }}</div>
+                <div style="font-size:11px;color:#888">{{ \App\Models\Setting::get('barangay_name', 'Resident Portal') }}</div>
             </div>
         </a>
         <div class="portal-desktop-nav-links d-flex align-items-center gap-1">
@@ -89,7 +89,7 @@
                     </ul>
                 </div>
             @else
-                <a href="{{ route('portal.login') }}" class="btn-portal-login">Login</a>
+                <a href="{{ route('login') }}" class="btn-portal-login">Login</a>
             @endif
         </div>
     </div>
@@ -101,8 +101,8 @@
                 <a href="{{ route('portal.index') }}" class="portal-brand">
                     <div class="portal-brand-icon"><i class="ti ti-building-community"></i></div>
                     <div class="d-none d-sm-block">
-                        <div class="portal-brand-name">SmartBarangay</div>
-                        <div class="portal-brand-sub">Resident Portal</div>
+                        <div class="portal-brand-name">{{ \App\Models\Setting::get('system_name', 'BarangayConnect') }}</div>
+                        <div class="portal-brand-sub">{{ \App\Models\Setting::get('barangay_name', 'Resident Portal') }}</div>
                     </div>
                 </a>
                 <div class="d-flex align-items-center gap-2">
@@ -125,7 +125,7 @@
                             </ul>
                         </div>
                     @else
-                        <a href="{{ route('portal.login') }}" class="btn-portal-login">Login</a>
+                        <a href="{{ route('login') }}" class="btn-portal-login">Login</a>
                     @endif
                 </div>
             </div>

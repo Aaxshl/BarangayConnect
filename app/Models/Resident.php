@@ -7,9 +7,10 @@ class Resident extends Model {
     use HasFactory;
     protected $fillable = [
         'first_name','last_name','middle_name','birthdate','age','gender',
-        'civil_status','address','purok','zone','contact_number','occupation',
+        'civil_status','address','purok','zone','contact_number','password','occupation',
         'household_id','status','qr_code','photo','created_by'
     ];
+    protected $hidden = ['password'];
     protected $casts = ['birthdate' => 'date'];
 
     public function household() { return $this->belongsTo(Household::class); }

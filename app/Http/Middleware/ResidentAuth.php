@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 class ResidentAuth {
     public function handle(Request $request, Closure $next) {
         if (!session('resident_id')) {
-            return redirect()->route('portal.login')->with('error', 'Please login to continue.');
+            return redirect()->route('login')->with('error', 'Please sign in to access your resident portal.');
         }
         return $next($request);
     }
