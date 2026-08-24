@@ -11,15 +11,33 @@
             <p style="font-size:13.5px;color:#555;line-height:1.6">{{ $item->description }}</p>
             <div style="font-size:13px;color:#888"><i class="ti ti-map-pin"></i> {{ $item->location }}</div>
             <div class="step-tracker mt-4">
-                @php $statuses = ['pending','under_review','assigned','in_progress','resolved']; @endphp
-                @foreach($statuses as $s)
+                @php 
+                    $statuses = ['pending','under_review','assigned','in_progress','resolved'];
+                    $idx = array_search($item->status, $statuses);
+                @endphp
+                @foreach($statuses as $cur => $s)
                     @php
-                        $idx = array_search($item->status, $statuses);
-                        $cur = array_search($s, $statuses);
-                        $state = $cur < $idx ? 'done' : ($cur == $idx ? 'current' : '');
+                        $state = '';
+                        if ($item->status === 'resolved') {
+                            $state = 'done';
+                        } elseif ($idx !== false) {
+                            if ($cur < $idx) {
+                                $state = 'done';
+                            } elseif ($cur === $idx) {
+                                $state = 'current';
+                            }
+                        }
                     @endphp
                     <div class="step-item {{ $state }}">
-                        <div class="step-dot {{ $state }}">@if($state=='done')<i class="ti ti-check" style="font-size:9px"></i>@elseif($state=='current')<i class="ti ti-clock" style="font-size:9px"></i>@endif</div>
+                        <div class="step-dot {{ $state }}">
+                            @if($state == 'done')
+                                <i class="ti ti-check" style="font-size:9px"></i>
+                            @elseif($state == 'current')
+                                <i class="ti ti-clock" style="font-size:9px"></i>
+                            @else
+                                <span style="font-size:9px">{{ $cur + 1 }}</span>
+                            @endif
+                        </div>
                         <div class="step-label">{{ ucwords(str_replace('_',' ',$s)) }}</div>
                     </div>
                 @endforeach

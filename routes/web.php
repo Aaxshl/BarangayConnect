@@ -74,9 +74,9 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
 
     // Citizen Requests
     Route::resource('citizen-requests', CitizenRequestController::class);
-    Route::post('/citizen-requests/{request}/assign', [CitizenRequestController::class, 'assign'])->name('citizen-requests.assign');
-    Route::post('/citizen-requests/{request}/status', [CitizenRequestController::class, 'updateStatus'])->name('citizen-requests.status');
-    Route::post('/citizen-requests/{request}/convert', [CitizenRequestController::class, 'convertToServiceLog'])->name('citizen-requests.convert');
+    Route::post('/citizen-requests/{citizenRequest}/assign', [CitizenRequestController::class, 'assign'])->name('citizen-requests.assign');
+    Route::post('/citizen-requests/{citizenRequest}/status', [CitizenRequestController::class, 'updateStatus'])->name('citizen-requests.status');
+    Route::post('/citizen-requests/{citizenRequest}/convert', [CitizenRequestController::class, 'convertToServiceLog'])->name('citizen-requests.convert');
 
     // Issue Mapping
     Route::get('/mapping', [IssueMappingController::class, 'index'])->name('mapping.index');
