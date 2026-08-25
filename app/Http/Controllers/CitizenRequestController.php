@@ -111,7 +111,7 @@ class CitizenRequestController extends Controller {
             'resident_id'     => $citizenRequest->resident_id,
             'description'     => $citizenRequest->description,
             'date_of_service' => today(),
-            'status'          => 'in_progress',
+            'status'          => $citizenRequest->assigned_to ? 'assigned' : 'pending',
             'assigned_to'     => $citizenRequest->assigned_to,
             'created_by'      => auth()->id(),
         ]);

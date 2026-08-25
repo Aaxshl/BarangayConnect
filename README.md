@@ -152,6 +152,24 @@ Visit **http://127.0.0.1:8000/login** to log in as admin or resident
 
 ---
 
+## 📋 Service Log & Blotter Workflow
+
+```
+[1] Recorded (Pending) — Walk-in intake or converted from citizen report
+      ↓  (Assign Officer & Schedule)
+[2] Assigned           — Assigned to official/lupon with date of service
+      ↓  (Start Action)
+[3] In Progress        — Mediation, assistance, or inspection ongoing
+      ↓  (Resolve with outcome summary)
+[4] Resolved           — Agreement signed or assistance fulfilled
+      ↓  (Close & Archive)
+[5] Closed             — Record officially finalized and archived
+
+❌ Cancelled / Dismissed — Dismissed at any active stage (reason required)
+```
+
+---
+
 ## 📁 Project Structure
 
 ```

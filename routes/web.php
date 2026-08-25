@@ -72,6 +72,8 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
 
     // Service Logs
     Route::resource('service-logs', ServiceLogController::class);
+    Route::post('/service-logs/{serviceLog}/assign', [ServiceLogController::class, 'assign'])->name('service-logs.assign');
+    Route::post('/service-logs/{serviceLog}/status', [ServiceLogController::class, 'updateStatus'])->name('service-logs.status');
 
     // Citizen Requests
     Route::resource('citizen-requests', CitizenRequestController::class);
