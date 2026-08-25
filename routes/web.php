@@ -66,6 +66,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     Route::put('/documents/templates/{type}', [App\Http\Controllers\DocumentTemplateController::class, 'update'])->name('documents.templates.update');
     Route::post('/documents/templates/{type}/reset', [App\Http\Controllers\DocumentTemplateController::class, 'reset'])->name('documents.templates.reset');
     Route::resource('documents', DocumentController::class);
+    Route::post('/documents/{document}/status', [DocumentController::class, 'updateStatus'])->name('documents.status');
     Route::get('/documents/{document}/print', [DocumentController::class, 'print'])->name('documents.print');
     Route::post('/documents/{document}/reissue', [DocumentController::class, 'reissue'])->name('documents.reissue');
 

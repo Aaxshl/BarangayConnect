@@ -1,51 +1,62 @@
-# SmartBarangay Information and Citizen Service Management System
+# BarangayConnect — Barangay Information & Citizen Service Management System
 
-A modern, full-featured web-based platform designed to digitalize barangay operations, resident record management, document issuance and template customization, service tracking, geographic issue mapping, and citizen engagement.
+A modern, full-featured web platform that digitalizes barangay operations — from resident record management and document issuance to citizen issue reporting and community announcements.
 
 ---
 
 ## 🌟 Key Features
 
-- **📊 Admin Dashboard:** Real-time analytics, monthly request statistics, quick shortcuts, recent citizen reports, and interactive notification alerts.
-- **👥 Resident Record Management:** Complete resident profiling, status tracking, age/civil status records, and resident photo upload with live preview.
-- **🏠 Household Profiling:** Household records, Head of Household assignment, family member list, and dynamic member assignment/removal.
-- **📄 Document Issuance & Custom Templates:**
+### 🖥️ Admin Panel
+- **📊 Dashboard** — Real-time KPIs, monthly request/document statistics, quick-action shortcuts, recent citizen reports feed, and notification alerts.
+- **👥 Resident Record Management** — Complete resident profiling with photo upload, QR code generation, age auto-calculation, civil status, occupation, purok/zone, and status tracking.
+- **📄 Document Issuance — Progressive Workflow**
   - Issue Barangay Clearance, Certificate of Residency, Certificate of Indigency, Business Clearance, and Barangay Permits.
-  - **Customizable Document Templates:** Edit body texts with dynamic tags (`{RESIDENT_NAME}`, `{PURPOSE}`, `{DOC_NUMBER}`, `{ISSUE_DATE}`, etc.), header/footer texts, signatory titles, and toggle/upload custom Barangay seals & logos per document type.
-  - Clean PDF streaming and official certificate printing.
-- **📝 Citizen's Requests/Reports & Blotter Management:**
-  - Citizen issue reporting with photo attachment and GPS geolocation.
-  - Interactive **Leaflet.js map** displaying pinpoint report locations with Google Maps directions integration.
-  - Status progression tracking (`pending` ➔ `under_review` ➔ `assigned` ➔ `in_progress` ➔ `resolved`).
-  - Convert citizen requests directly into blotter/service log records.
-- **🗺️ Geographic Issue Mapping:** Heatmap and cluster map visualizer of all barangay issues.
-- **📱 Citizen Resident Portal:**
-  - Responsive web & mobile interface with bottom navigation.
-  - Online document request submission and status tracking.
-  - Community announcements feed with banner image previews.
-- **🔍 QR Verification:** Generate and scan QR codes for quick resident authentication.
-- **📈 Reports & Analytics:** Population demographics, document issuance metrics, resolution rates, and exportable reports in PDF and Excel formats.
-- **🔒 System Maintenance Mode:** Toggle switch in Admin Settings to gate citizen portal access during scheduled maintenance while preserving admin access.
+  - **5-step progressive status tracking:** `Requested` → `Under Review` (auto on admin open) → `Processing` → `Ready for Pickup` → `Released` — with optional rejection and reason.
+  - **Customizable Document Templates** — Edit body text with dynamic tags (`{RESIDENT_NAME}`, `{PURPOSE}`, `{DOC_NUMBER}`, `{ISSUE_DATE}`, `{BARANGAY_NAME}`, etc.), header/footer text, signatory name, and optional custom logo per document type.
+  - Clean PDF streaming via DomPDF for official certificate printing.
+- **📝 Citizen Requests & Issue Reports — Progressive Workflow**
+  - Citizen issue/complaint reporting with photo attachment and GPS geolocation.
+  - **5-step status tracking:** `Pending` → `Under Review` → `Assigned` → `In Progress` → `Resolved`.
+  - Personnel assignment before investigation begins.
+  - Resolution notes and auto-collapsible resolved section.
+  - Interactive **Leaflet.js map** with report pin clusters, heatmap view, and Google Maps directions integration.
+  - Convert citizen requests into blotter/service log records.
+- **📢 Announcements** — Publish community announcements with banner images, category tags, and scheduling.
+- **🔍 QR Verification** — Generate and scan resident QR codes for fast authentication.
+- **📈 Reports & Analytics** — Population demographics, document issuance metrics, issue resolution rates; export to PDF and Excel.
+- **⚙️ Barangay Settings** — Configure barangay name, address, contact info, logo, captain name, and system name — all reflected live across the portal and printed documents.
+- **🔒 Maintenance Mode** — Toggle to suspend citizen portal access during maintenance while preserving full admin access.
+
+### 🌐 Citizen Resident Portal
+- **Unified Login** — Single login page for both residents and staff/admin; automatically detects account type.
+- **Resident Registration** — Full self-registration collecting all required details: name, birthdate, gender, civil status, address, purok/zone, contact number, occupation, and photo.
+- **Document Requests** — Submit document requests online; track real-time 5-step progress with pickup notification and release confirmation.
+- **Issue Reporting** — Report community issues with location and optional photo; track status progression in real time.
+- **Announcements** — View latest community news and announcements.
+- **Request Tracking** — Unified tracking page for all submitted reports and document requests with live search.
+- **Dynamic Barangay Branding** — Portal header, footer, and all labels automatically update when admin changes barangay settings.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend:** PHP 8.1+ / Laravel 10
-- **Frontend:** Blade Templates, Bootstrap 5, Tabler Icons, Vanilla JavaScript
-- **Database:** MySQL / SQLite
-- **Maps:** Leaflet.js + OpenStreetMap
-- **PDF Generation:** Barryvdh Laravel DomPDF
-- **QR Code:** Endroid QR Code
+| Layer | Technology |
+|---|---|
+| **Backend** | PHP 8.1+ / Laravel 10 |
+| **Frontend** | Blade Templates, Bootstrap 5, Tabler Icons, Vanilla JS |
+| **Database** | MySQL 8+ / SQLite 3 |
+| **Maps** | Leaflet.js + OpenStreetMap |
+| **PDF** | Barryvdh Laravel DomPDF |
+| **QR Code** | Endroid QR Code |
 
 ---
 
 ## 📋 Requirements
 
-- PHP >= 8.1 (with `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `fileinfo`, `gd` or `imagick`)
+- PHP >= 8.1 with extensions: `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `fileinfo`, `gd` or `imagick`
 - Composer >= 2.x
-- MySQL >= 8.0 or SQLite 3
-- Node.js >= 16.x & NPM
+- MySQL >= 8.0 **or** SQLite 3
+- Node.js >= 16.x & NPM *(only needed if compiling frontend assets)*
 
 ---
 
@@ -53,76 +64,116 @@ A modern, full-featured web-based platform designed to digitalize barangay opera
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/smartbarangay.git
-cd smartbarangay
+git clone https://github.com/Aaxshl/BarangayConnect.git
+cd BarangayConnect
 
 # 2. Install PHP dependencies
 composer install
 
-# 3. Copy environment file
+# 3. Copy environment file and configure
 cp .env.example .env
 
 # 4. Generate application key
 php artisan key:generate
 
 # 5. Configure your database in .env
+# For SQLite (default, zero-config):
+#   DB_CONNECTION=sqlite
+#   DB_DATABASE=/absolute/path/to/database/database.sqlite
+
 # For MySQL:
-# DB_CONNECTION=mysql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306
-# DB_DATABASE=smartbarangay
-# DB_USERNAME=root
-# DB_PASSWORD=
+#   DB_CONNECTION=mysql
+#   DB_HOST=127.0.0.1
+#   DB_PORT=3306
+#   DB_DATABASE=barangayconnect
+#   DB_USERNAME=root
+#   DB_PASSWORD=
 
-# For SQLite:
-# DB_CONNECTION=sqlite
-# DB_DATABASE=/absolute/path/to/database/database.sqlite
-
-# 6. Run migrations and database seeders
+# 6. Run migrations and seed initial data
 php artisan migrate --seed
 
-# 7. Create storage symlink (important for photo and document uploads)
+# 7. Create storage symlink (required for photo & file uploads)
 php artisan storage:link
 
-# 8. Start local development server
+# 8. Start the development server
 php artisan serve
+```
+
+Visit **http://127.0.0.1:8000** for the resident portal  
+Visit **http://127.0.0.1:8000/login** to log in as admin or resident
+
+---
+
+## 🔑 Default Admin Accounts
+
+| Role | Email | Password | Access Level |
+|---|---|---|---|
+| **Administrator** | `admin@brgy.gov.ph` | `password` | Full system access |
+| **Secretary** | `secretary@brgy.gov.ph` | `password` | Records & documents |
+| **Staff** | `staff@brgy.gov.ph` | `password` | Service logs & requests |
+
+> Residents register through the portal at `/register`.
+
+---
+
+## 📄 Document Workflow
+
+```
+[1] Requested       — Resident submits online or staff creates manually
+      ↓  (auto on admin first-view)
+[2] Under Review    — Admin opens the request; viewed_at is recorded
+      ↓  (Approve & Prepare)
+[3] Processing      — Document is being prepared
+      ↓  (Mark Ready for Pickup)
+[4] Ready for Pickup — Resident is notified to claim at the Barangay Hall
+      ↓  (Release to Resident)
+[5] Released        — Document officially handed over; released_at recorded
+
+❌ Cancelled  — Rejected at any active stage (reason required)
 ```
 
 ---
 
-## 🔑 Default Accounts
+## 📝 Citizen Request Workflow
 
-| Role | Email | Password | Access |
-|------|-------|----------|--------|
-| **Administrator** | `admin@brgy.gov.ph` | `password` | Full System Access |
-| **Secretary** | `secretary@brgy.gov.ph` | `password` | Records & Documents |
-| **Staff** | `staff@brgy.gov.ph` | `password` | Service Logs & Requests |
+```
+[1] Pending       — Submitted by resident or reported by staff
+      ↓
+[2] Under Review  — Admin acknowledges and reviews the report
+      ↓  (Assign Personnel first)
+[3] Assigned      — Specific staff/personnel assigned to handle
+      ↓
+[4] In Progress   — Active investigation or resolution underway
+      ↓
+[5] Resolved      — Issue addressed; resolution note added
+
+❌ Rejected  — Closed without resolution (reason required)
+```
 
 ---
 
 ## 📁 Project Structure
 
 ```
-smartbarangay/
+BarangayConnect/
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/       # Resource & action controllers
-│   │   └── Middleware/        # Auth & System Maintenance middleware
-│   └── Models/                # Eloquent models & relationships
-├── config/                    # Application & service configurations
+│   │   ├── Controllers/        # Resource & action controllers
+│   │   └── Middleware/         # Auth, ResidentAuth, MaintenanceMode
+│   └── Models/                 # Eloquent models & relationships
+├── config/                     # App & service configurations
 ├── database/
-│   ├── migrations/            # Database schema migrations
-│   └── seeders/               # Initial demo & admin data seeders
+│   ├── migrations/             # Database schema migrations
+│   └── seeders/                # Initial admin & demo data seeders
 ├── public/
-│   ├── css/                   # Admin & portal stylesheets
-│   └── js/                    # Client-side scripts
+│   ├── css/                    # Admin & portal stylesheets
+│   └── js/                     # Client-side scripts & map integration
 ├── resources/
 │   └── views/
-│       ├── admin/             # Admin portal views & modules
-│       ├── layouts/           # Admin & resident portal layouts
-│       └── resident/          # Resident portal views
+│       ├── admin/              # All admin panel views & modules
+│       ├── auth/               # Unified login view
+│       ├── layouts/            # Admin & resident portal layouts
+│       └── resident/           # Resident portal views
 └── routes/
-    ├── web.php                # Web routes & admin routes
-    └── console.php            # Artisan console commands
+    └── web.php                 # All web & admin routes
 ```
-

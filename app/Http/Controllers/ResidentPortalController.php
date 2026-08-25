@@ -87,7 +87,7 @@ class ResidentPortalController extends Controller {
             'purpose'          => $validated['purpose'],
             'number_of_copies' => $validated['number_of_copies'],
             'issue_date'       => today(),
-            'status'           => 'processing',
+            'status'           => 'pending',
         ]);
         return redirect()->route('portal.track.detail', $doc->document_number)
             ->with('success','Request submitted. Tracking: '.$doc->document_number);
