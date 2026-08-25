@@ -96,6 +96,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     Route::get('/reports/documents', [ReportController::class, 'documents'])->name('reports.documents');
     Route::get('/reports/services', [ReportController::class, 'services'])->name('reports.services');
     Route::get('/reports/export/{type}/{format}', [ReportController::class, 'export'])->name('reports.export');
+    Route::post('/reports/export-zip', [ReportController::class, 'exportZip'])->name('reports.export.zip');
 
     // Announcements
     Route::resource('announcements', AnnouncementController::class);
