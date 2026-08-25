@@ -84,15 +84,17 @@
             border: 1px solid #e2e8f0;
             border-radius: 14px;
             overflow: hidden;
-            transition: transform .2s ease, box-shadow .2s ease;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
             height: 100%;
             display: flex;
             flex-direction: column;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
         }
         .announcement-card-large:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(24,95,165,0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(24,95,165,0.12);
+            border-color: #93c5fd;
         }
         .announcement-img {
             width: 100%;
@@ -236,48 +238,118 @@
     </p>
 </div>
 
-<!-- SECTION 1: LATEST ANNOUNCEMENTS (Bigger & Prominent - Position 1) -->
+<!-- SECTION 1: LATEST ANNOUNCEMENTS (Always 3 at a time with pagination) -->
 @if($announcements->count() > 0)
+@php $announcementChunks = $announcements->chunk(3); @endphp
 <div class="py-5" style="background:#fff;border-bottom:1px solid #e8eef4">
     <div class="container px-3 px-md-4">
-        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
             <div>
                 <div class="text-uppercase fw-bold small text-primary" style="letter-spacing:0.8px">Stay Informed</div>
                 <h2 style="font-size:24px;font-weight:800;color:#1e293b;margin:0">Latest Barangay Announcements</h2>
             </div>
-            <div class="text-muted small">
-                <i class="ti ti-bell-ringing me-1 text-primary"></i>Official Updates & Advisories
+
+            @if(count($announcementChunks) > 1)
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1.5 fw-semibold" id="annPrevBtn" onclick="changeAnnPage(-1)" disabled style="border-radius:8px;font-size:13px">
+                    <i class="ti ti-chevron-left me-1"></i>Prev
+                </button>
+                <span class="small fw-bold text-muted px-2" id="annPageIndicator" style="font-size:13px;min-width:60px;text-align:center">1 of {{ count($announcementChunks) }}</span>
+                <button type="button" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-semibold" id="annNextBtn" onclick="changeAnnPage(1)" style="border-radius:8px;font-size:13px">
+                    Next<i class="ti ti-chevron-right ms-1"></i>
+                </button>
             </div>
+            @endif
         </div>
 
-        <div class="row g-4">
-            @foreach($announcements as $ann)
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="announcement-card-large">
-                    @if($ann->image)
-                        <img src="{{ asset('storage/'.$ann->image) }}" class="announcement-img" alt="{{ $ann->title }}">
-                    @else
-                        <div class="announcement-img d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg,#e0f2fe,#dbeafe);color:#0284c7">
-                            <i class="ti ti-speakerphone" style="font-size:42px;opacity:0.7"></i>
-                        </div>
-                    @endif
-                    <div class="announcement-body">
-                        <span class="announcement-badge {{ strtolower($ann->announcement_type) }}">
-                            {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                        </span>
-                        <h5 class="announcement-title-large">{{ $ann->title }}</h5>
-                        <p class="announcement-text-large">{{ Str::limit($ann->body, 130) }}</p>
-                        <div class="announcement-date">
-                            <i class="ti ti-calendar" style="font-size:14px"></i>
-                            <span>{{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
+        @foreach($announcementChunks as $chunkIdx => $chunk)
+        <div class="announcement-page" id="ann-page-{{ $chunkIdx }}" style="{{ $chunkIdx === 0 ? '' : 'display:none;' }}">
+            <div class="row g-4">
+                @foreach($chunk as $ann)
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="announcement-card-large" data-bs-toggle="modal" data-bs-target="#annModal-{{ $ann->id }}">
+                        @if($ann->image)
+                            <img src="{{ asset('storage/'.$ann->image) }}" class="announcement-img" alt="{{ $ann->title }}">
+                        @else
+                            <div class="announcement-img d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg,#e0f2fe,#dbeafe);color:#0284c7">
+                                <i class="ti ti-speakerphone" style="font-size:42px;opacity:0.7"></i>
+                            </div>
+                        @endif
+                        <div class="announcement-body">
+                            <span class="announcement-badge {{ strtolower($ann->announcement_type) }}">
+                                {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                            </span>
+                            <h5 class="announcement-title-large">{{ $ann->title }}</h5>
+                            <p class="announcement-text-large">{{ Str::limit($ann->body, 130) }}</p>
+                            <div class="announcement-date d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="ti ti-calendar me-1"></i>{{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}
+                                </span>
+                                <span class="text-primary fw-semibold small">Read more <i class="ti ti-arrow-right"></i></span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                @endforeach
             </div>
+        </div>
+        @endforeach
+
+        @if(count($announcementChunks) > 1)
+        {{-- Dot navigation indicators --}}
+        <div class="d-flex justify-content-center align-items-center gap-2 mt-4 pt-2">
+            @foreach($announcementChunks as $chunkIdx => $chunk)
+            <button type="button" class="ann-dot" onclick="setAnnPage({{ $chunkIdx }})"
+                style="border:none;height:8px;border-radius:4px;transition:all .3s ease;cursor:pointer;{{ $chunkIdx === 0 ? 'width:24px;background:#185fa5' : 'width:8px;background:#cbd5e1' }}"
+                title="Page {{ $chunkIdx + 1 }}">
+            </button>
             @endforeach
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- Announcement Information Modals --}}
+@foreach($announcements as $ann)
+<div class="modal fade" id="annModal-{{ $ann->id }}" tabindex="-1" aria-labelledby="annModalLabel-{{ $ann->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;box-shadow:0 12px 35px rgba(0,0,0,0.18)">
+            @if($ann->image)
+                <div style="position:relative;background:#000">
+                    <img src="{{ asset('storage/'.$ann->image) }}" alt="{{ $ann->title }}" style="width:100%;max-height:360px;object-fit:cover;">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
+                        style="position:absolute;top:15px;right:15px;background-color:rgba(0,0,0,0.5);border-radius:50%;padding:10px;opacity:0.9"></button>
+                </div>
+            @endif
+            <div class="modal-header {{ $ann->image ? 'border-0 pb-0' : '' }}" style="padding: 24px 28px 12px;">
+                <div class="w-100">
+                    <span class="announcement-badge {{ strtolower($ann->announcement_type) }}">
+                        {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                    </span>
+                    <h4 class="modal-title fw-bold text-dark mt-2 mb-2" id="annModalLabel-{{ $ann->id }}" style="font-size:22px;line-height:1.35">
+                        {{ $ann->title }}
+                    </h4>
+                    <div class="text-muted small d-flex align-items-center flex-wrap gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
+                        <span><i class="ti ti-calendar me-1 text-primary"></i>Posted on {{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
+                        <span>•</span>
+                        <span><i class="ti ti-building-community me-1 text-primary"></i>{{ $settings['barangay_name'] ?? 'Barangay Office' }}</span>
+                    </div>
+                </div>
+                @if(!$ann->image)
+                    <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal" aria-label="Close"></button>
+                @endif
+            </div>
+            <div class="modal-body" style="padding: 18px 28px 28px;font-size:15px;line-height:1.75;color:#334155;">
+                <div style="white-space:pre-line;">{!! nl2br(e($ann->body)) !!}</div>
+            </div>
+            <div class="modal-footer bg-light d-flex justify-content-between" style="border-top:1px solid #e2e8f0;padding:12px 28px;">
+                <span class="small text-muted"><i class="ti ti-shield-check me-1 text-success"></i>Official Barangay Announcement</span>
+                <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal" style="border-radius:8px">Close</button>
+            </div>
         </div>
     </div>
 </div>
+@endforeach
 @endif
 
 <!-- SECTION 2: AVAILABLE SERVICES (Smaller & Compact - Position 2) -->
@@ -383,5 +455,37 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let currentAnnPage = 0;
+const totalAnnPages = {{ count($announcementChunks ?? []) }};
+
+function updateAnnPage() {
+    document.querySelectorAll('.announcement-page').forEach((el, idx) => {
+        el.style.display = (idx === currentAnnPage) ? '' : 'none';
+    });
+    const prevBtn = document.getElementById('annPrevBtn');
+    const nextBtn = document.getElementById('annNextBtn');
+    const pageIndicator = document.getElementById('annPageIndicator');
+    
+    if (prevBtn) prevBtn.disabled = (currentAnnPage === 0);
+    if (nextBtn) nextBtn.disabled = (currentAnnPage >= totalAnnPages - 1);
+    if (pageIndicator) pageIndicator.textContent = `${currentAnnPage + 1} of ${totalAnnPages}`;
+
+    document.querySelectorAll('.ann-dot').forEach((dot, idx) => {
+        dot.style.background = (idx === currentAnnPage) ? '#185fa5' : '#cbd5e1';
+        dot.style.width = (idx === currentAnnPage) ? '24px' : '8px';
+    });
+}
+
+function changeAnnPage(delta) {
+    currentAnnPage = Math.max(0, Math.min(totalAnnPages - 1, currentAnnPage + delta));
+    updateAnnPage();
+}
+
+function setAnnPage(page) {
+    currentAnnPage = page;
+    updateAnnPage();
+}
+</script>
 </body>
 </html>

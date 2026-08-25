@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class ResidentPortalController extends Controller {
     public function home() {
-        $announcements = Announcement::where('status','published')->latest()->limit(6)->get();
+        $announcements = Announcement::where('status','published')->latest()->get();
         $settings = Setting::all()->pluck('value','key')->toArray();
         return view('resident.home', compact('announcements', 'settings'));
     }
