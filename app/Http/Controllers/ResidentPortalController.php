@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class ResidentPortalController extends Controller {
     public function home() {
-        $announcements = Announcement::where('status','published')->latest()->get();
+        $announcements = Announcement::published()->latest('published_at')->get();
         $settings = Setting::all()->pluck('value','key')->toArray();
         return view('resident.home', compact('announcements', 'settings'));
     }
@@ -65,7 +65,7 @@ class ResidentPortalController extends Controller {
         $resident = $this->getResident();
         $myRequests  = CitizenRequest::where('resident_id',$resident->id)->latest()->limit(5)->get();
         $myDocuments = Document::where('resident_id',$resident->id)->latest()->limit(5)->get();
-        $announcements = Announcement::where('status','published')->latest()->limit(3)->get();
+        $announcements = Announcement::published()->latest('published_at')->limit(3)->get();
         return view('resident.dashboard', compact('resident','myRequests','myDocuments','announcements'));
     }
     public function requestForm() {
@@ -130,7 +130,7 @@ class ResidentPortalController extends Controller {
         return view('resident.track-detail', compact('item','tracking'));
     }
     public function announcements() {
-        $announcements = Announcement::where('status','published')->latest()->paginate(10);
+        $announcements = Announcement::published()->latest('published_at')->paginate(10);
         return view('resident.announcements', compact('announcements'));
     }
     public function profile() {

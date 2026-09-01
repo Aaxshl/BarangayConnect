@@ -23,7 +23,7 @@ class DashboardController extends Controller {
             'monthly_requests' => CitizenRequest::selectRaw("{$monthExpr}, count(*) as total")
                                     ->whereYear('created_at', now()->year)
                                     ->groupBy('month')->orderBy('month')->get(),
-            'announcements'    => Announcement::where('status','published')->latest()->limit(3)->get(),
+            'announcements'    => Announcement::published()->latest('published_at')->limit(3)->get(),
         ];
         return view('admin.dashboard', $data);
     }

@@ -101,7 +101,9 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     // Announcements
     Route::resource('announcements', AnnouncementController::class);
     Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
+    Route::post('/announcements/{announcement}/schedule', [AnnouncementController::class, 'schedule'])->name('announcements.schedule');
     Route::post('/announcements/{announcement}/archive', [AnnouncementController::class, 'archive'])->name('announcements.archive');
+    Route::post('/announcements/{announcement}/draft', [AnnouncementController::class, 'revertToDraft'])->name('announcements.draft');
 
     // Users
     Route::resource('users', UserController::class);

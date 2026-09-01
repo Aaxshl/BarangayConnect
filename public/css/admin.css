@@ -127,6 +127,7 @@ body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f
 .badge-pending, .badge-draft { background: #faeeda; color: #854f0b; }
 .badge-processing, .badge-in-progress, .badge-in_progress, .badge-under_review { background: #e6f1fb; color: #185fa5; }
 .badge-pending_pickup, .badge-assigned, .badge-ready_for_pickup { background: #fff3cd; color: #856404; }
+.badge-scheduled { background: #f3e8ff; color: #6b21a8; }
 .badge-urgent { background: #fcebeb; color: #a32d2d; }
 
 /* Forms */
