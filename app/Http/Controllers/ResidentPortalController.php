@@ -114,11 +114,49 @@ class ResidentPortalController extends Controller {
         return redirect()->route('portal.track.detail',$tracking)
             ->with('success','Report submitted. Tracking: '.$tracking);
     }
-    public function track() {
+    public function track(Request $request) {
         $resident = $this->getResident();
-        $myRequests  = CitizenRequest::where('resident_id',$resident->id)->latest()->paginate(10);
-        $myDocuments = Document::where('resident_id',$resident->id)->latest()->paginate(10);
-        return view('resident.track', compact('resident','myRequests','myDocuments'));
+
+        // Active vs Completed Documents
+        $activeDocStatuses = ['pending', 'under_review', 'processing', 'ready_for_pickup'];
+        $completedDocStatuses = ['released', 'cancelled'];
+
+        $activeDocuments = Document::with('issuedBy')->where('resident_id', $resident->id)
+            ->whereIn('status', $activeDocStatuses)
+            ->latest()
+            ->get();
+
+        $completedDocuments = Document::with('issuedBy')->where('resident_id', $resident->id)
+            ->whereIn('status', $completedDocStatuses)
+            ->latest()
+            ->get();
+
+        // Active vs Resolved/Closed Reports
+        $activeReportStatuses = ['pending', 'under_review', 'assigned', 'in_progress'];
+        $completedReportStatuses = ['resolved', 'closed', 'rejected', 'cancelled'];
+
+        $activeReports = CitizenRequest::with('assignedTo')->where('resident_id', $resident->id)
+            ->whereIn('status', $activeReportStatuses)
+            ->latest()
+            ->get();
+
+        $completedReports = CitizenRequest::with('assignedTo')->where('resident_id', $resident->id)
+            ->whereIn('status', $completedReportStatuses)
+            ->latest()
+            ->get();
+
+        $totalDocs = $activeDocuments->count() + $completedDocuments->count();
+        $totalReports = $activeReports->count() + $completedReports->count();
+
+        return view('resident.track', compact(
+            'resident',
+            'activeDocuments',
+            'completedDocuments',
+            'activeReports',
+            'completedReports',
+            'totalDocs',
+            'totalReports'
+        ));
     }
     public function trackDetail($tracking) {
         $resident = $this->getResident();

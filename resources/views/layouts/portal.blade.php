@@ -66,7 +66,6 @@
             <a href="{{ route('portal.request') }}" class="{{ request()->routeIs('portal.request*') ? 'active' : '' }}"><i class="ti ti-file-plus me-1"></i>Request Document</a>
             <a href="{{ route('portal.report') }}" class="{{ request()->routeIs('portal.report*') ? 'active' : '' }}"><i class="ti ti-message-report me-1"></i>Report Issue</a>
             <a href="{{ route('portal.track') }}" class="{{ request()->routeIs('portal.track*') ? 'active' : '' }}"><i class="ti ti-list-search me-1"></i>Track</a>
-            <a href="{{ route('portal.announcements') }}" class="{{ request()->routeIs('portal.announcements') ? 'active' : '' }}"><i class="ti ti-speakerphone me-1"></i>Announcements</a>
         </div>
         <div class="d-flex align-items-center gap-2">
             @if(session('resident_id'))
@@ -79,8 +78,6 @@
                         <span style="font-size:13px;font-weight:600;color:#1a3a6b">{{ $res->first_name ?? 'Resident' }}</span>
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ route('portal.profile') }}"><i class="ti ti-user me-2"></i>My Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('portal.logout') }}">@csrf
                                 <button type="submit" class="dropdown-item text-danger"><i class="ti ti-logout me-2"></i>Logout</button>
@@ -115,8 +112,6 @@
                                 </div>
                             </div>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ route('portal.profile') }}"><i class="ti ti-user me-2"></i>My Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="POST" action="{{ route('portal.logout') }}">@csrf
                                         <button type="submit" class="dropdown-item text-danger"><i class="ti ti-logout me-2"></i>Logout</button>
@@ -163,9 +158,6 @@
         </a>
         <a href="{{ route('portal.track') }}" class="mobile-nav-item {{ request()->routeIs('portal.track*') ? 'active' : '' }}">
             <i class="ti ti-list-search"></i><span>Track</span>
-        </a>
-        <a href="{{ route('portal.profile') }}" class="mobile-nav-item {{ request()->routeIs('portal.profile') ? 'active' : '' }}">
-            <i class="ti ti-user-circle"></i><span>Profile</span>
         </a>
     </nav>
     @endif

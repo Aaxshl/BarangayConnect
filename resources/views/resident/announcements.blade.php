@@ -2,17 +2,84 @@
 @section('title','Announcements')
 @section('content')
 <div class="container-fluid px-3 px-md-4 mt-4">
-    <h2 class="section-title mb-4">Announcements</h2>
-    @forelse($announcements as $ann)
-    <div class="announce-card">
-        <div class="announce-type">{{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}</div>
-        <div class="announce-title">{{ $ann->title }}</div>
-        <p style="font-size:13.5px;color:#555;margin:6px 0 8px;line-height:1.6">{{ $ann->body }}</p>
-        <div class="announce-date">Posted {{ $ann->published_at->format('M d, Y') }}</div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <div class="text-uppercase fw-bold small text-primary" style="letter-spacing:0.8px">Barangay Updates</div>
+            <h2 class="section-title mb-0" style="font-size:22px;font-weight:800;color:#1e293b">Announcements &amp; Advisories</h2>
+        </div>
     </div>
-    @empty
-    <p class="text-muted">No announcements at this time.</p>
-    @endforelse
-    <div class="mt-3">{{ $announcements->links() }}</div>
+
+    <div class="row g-4">
+        @forelse($announcements as $ann)
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="announcement-card-large" data-bs-toggle="modal" data-bs-target="#annListModal-{{ $ann->id }}" style="cursor:pointer;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;height:100%">
+                @if($ann->image)
+                    <img src="{{ asset('storage/'.$ann->image) }}" class="announcement-img" alt="{{ $ann->title }}" style="width:100%;height:180px;object-fit:cover;">
+                @else
+                    <div class="announcement-img d-flex align-items-center justify-content-center" style="width:100%;height:180px;background:linear-gradient(135deg,#e0f2fe,#dbeafe);color:#0284c7">
+                        <i class="ti ti-speakerphone" style="font-size:42px;opacity:0.7"></i>
+                    </div>
+                @endif
+                <div class="p-3 d-flex flex-column flex-grow-1">
+                    <span class="badge align-self-start mb-2" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                        {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                    </span>
+                    <h5 class="fw-bold mb-2 text-dark" style="font-size:16px;line-height:1.35">{{ $ann->title }}</h5>
+                    <p class="text-muted small mb-3 flex-grow-1" style="line-height:1.6;font-size:13px">{{ Str::limit($ann->body, 120) }}</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="font-size:12px;color:#94a3b8">
+                        <span><i class="ti ti-calendar me-1"></i>{{ $ann->published_at ? $ann->published_at->format('M d, Y') : $ann->created_at->format('M d, Y') }}</span>
+                        <span class="text-primary fw-semibold">Read more <i class="ti ti-arrow-right"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Detail Modal --}}
+        <div class="modal fade" id="annListModal-{{ $ann->id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;box-shadow:0 12px 35px rgba(0,0,0,0.18)">
+                    @if($ann->image)
+                        <div style="position:relative;background:#000">
+                            <img src="{{ asset('storage/'.$ann->image) }}" alt="{{ $ann->title }}" style="width:100%;max-height:360px;object-fit:cover;">
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
+                                style="position:absolute;top:15px;right:15px;background-color:rgba(0,0,0,0.5);border-radius:50%;padding:10px"></button>
+                        </div>
+                    @endif
+                    <div class="modal-header {{ $ann->image ? 'border-0 pb-0' : '' }}" style="padding: 24px 28px 12px;">
+                        <div class="w-100">
+                            <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                                {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                            </span>
+                            <h4 class="modal-title fw-bold text-dark mt-2 mb-2" style="font-size:20px;line-height:1.35">
+                                {{ $ann->title }}
+                            </h4>
+                            <div class="text-muted small d-flex align-items-center gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
+                                <span><i class="ti ti-calendar me-1 text-primary"></i>Posted on {{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
+                            </div>
+                        </div>
+                        @if(!$ann->image)
+                            <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal" aria-label="Close"></button>
+                        @endif
+                    </div>
+                    <div class="modal-body" style="padding: 18px 28px 28px;font-size:15px;line-height:1.75;color:#334155;">
+                        <div style="white-space:pre-line;">{!! nl2br(e($ann->body)) !!}</div>
+                    </div>
+                    <div class="modal-footer bg-light" style="border-top:1px solid #e2e8f0;padding:12px 28px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal" style="border-radius:8px">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="col-12">
+            <div class="text-center py-5 card-custom text-muted">
+                <i class="ti ti-speakerphone" style="font-size:42px;opacity:0.3;display:block;margin-bottom:10px"></i>
+                <p class="mb-0">No announcements at this time.</p>
+            </div>
+        </div>
+        @endforelse
+    </div>
+
+    <div class="mt-4">{{ $announcements->links() }}</div>
 </div>
 @endsection
