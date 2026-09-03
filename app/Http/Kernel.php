@@ -43,6 +43,8 @@ class Kernel extends HttpKernel
         'verified'        => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth.admin'      => \App\Http\Middleware\AdminAuth::class,
         'auth.resident'   => \App\Http\Middleware\ResidentAuth::class,
+        'auth.sk'         => \App\Http\Middleware\SkAuth::class,
+        'role'            => \App\Http\Middleware\RoleMiddleware::class,
         'maintenance'     => \App\Http\Middleware\CheckMaintenanceMode::class,
     ];
 }

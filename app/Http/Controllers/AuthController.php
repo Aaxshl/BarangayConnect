@@ -12,6 +12,10 @@ class AuthController extends Controller {
      */
     public function showLogin() {
         if (Auth::check() || session('admin_user')) {
+            $user = Auth::user() ?? session('admin_user');
+            if ($user && $user->isSK()) {
+                return redirect()->route('sk.dashboard');
+            }
             return redirect()->route('admin.dashboard');
         }
         if (session('resident_id')) {
@@ -32,7 +36,7 @@ class AuthController extends Controller {
         $loginId = trim($request->login_id);
         $password = $request->password;
 
-        // 1. Check Staff / Admin User Account (by email or username)
+        // 1. Check Staff / Admin / SK User Account (by email)
         $user = User::where('email', $loginId)->first();
         if ($user && Auth::attempt(['email' => $user->email, 'password' => $password], $request->boolean('remember'))) {
             if ($user->status !== 'active') {
@@ -40,7 +44,10 @@ class AuthController extends Controller {
                 return back()->withErrors(['login_id' => 'Your staff/admin account is currently inactive.'])->withInput();
             }
             session(['admin_user' => $user]);
-            return redirect()->intended(route('admin.dashboard'))->with('success', 'Welcome back, ' . $user->name . '!');
+
+            // Route to SK Portal if SK role, else Admin dashboard
+            $targetRoute = $user->isSK() ? route('sk.dashboard') : route('admin.dashboard');
+            return redirect()->intended($targetRoute)->with('success', 'Welcome back, ' . $user->name . '!');
         }
 
         // 2. Check Resident / Citizen Account (by contact_number or email)

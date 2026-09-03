@@ -6,7 +6,9 @@
     <div class="d-flex gap-3" style="font-size:13.5px;color:#888">
         <span>Total: <strong style="color:#1a1a2e">{{ $households->total() }}</strong></span>
     </div>
+    @if(auth()->user()->canDo('residents.create_edit'))
     <a href="{{ route('admin.households.create') }}" class="btn btn-navy btn-sm"><i class="ti ti-plus me-1"></i>Register household</a>
+    @endif
 </div>
 <div class="table-responsive-custom">
     <table class="table-custom">
@@ -23,8 +25,10 @@
                 <td><span class="badge-status badge-{{ $hh->status }}">{{ ucfirst($hh->status) }}</span></td>
                 <td>
                     <div class="d-flex gap-1">
-                        <a href="{{ route('admin.households.show',$hh) }}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="ti ti-eye"></i></a>
-                        <a href="{{ route('admin.households.edit',$hh) }}" class="btn btn-sm btn-outline-navy py-0 px-2"><i class="ti ti-pencil"></i></a>
+                        <a href="{{ route('admin.households.show',$hh) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View"><i class="ti ti-eye"></i></a>
+                        @if(auth()->user()->canDo('residents.create_edit'))
+                        <a href="{{ route('admin.households.edit',$hh) }}" class="btn btn-sm btn-outline-navy py-0 px-2" title="Edit"><i class="ti ti-pencil"></i></a>
+                        @endif
                     </div>
                 </td>
             </tr>

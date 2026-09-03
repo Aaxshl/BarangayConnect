@@ -90,7 +90,7 @@
                 </div>
                 <div class="d-flex gap-2 align-items-center flex-wrap">
                     <span class="badge-status badge-{{ $document->status }}">{{ ucwords(str_replace('_',' ',$document->status)) }}</span>
-                    @if(in_array($document->status, ['processing','ready_for_pickup','released']))
+                    @if(in_array($document->status, ['processing','ready_for_pickup','released']) && auth()->user()->canDo('documents.print'))
                         <a href="{{ route('admin.documents.print',$document) }}" class="btn btn-navy btn-sm" target="_blank">
                             <i class="ti ti-printer me-1"></i>Print PDF
                         </a>
@@ -155,7 +155,7 @@
                 <div class="d-flex gap-2 flex-wrap">
 
                     {{-- under_review → processing --}}
-                    @if($document->status === 'under_review')
+                    @if($document->status === 'under_review' && auth()->user()->canDo('documents.process'))
                         <form method="POST" action="{{ route('admin.documents.status', $document) }}">
                             @csrf
                             <input type="hidden" name="action" value="approve">
@@ -166,7 +166,7 @@
                     @endif
 
                     {{-- processing → ready_for_pickup --}}
-                    @if($document->status === 'processing')
+                    @if($document->status === 'processing' && auth()->user()->canDo('documents.process'))
                         <form method="POST" action="{{ route('admin.documents.status', $document) }}">
                             @csrf
                             <input type="hidden" name="action" value="mark_ready">
@@ -177,22 +177,24 @@
                     @endif
 
                     {{-- ready_for_pickup → released --}}
-                    @if($document->status === 'ready_for_pickup')
+                    @if($document->status === 'ready_for_pickup' && auth()->user()->canDo('documents.release'))
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#releaseModal">
                             <i class="ti ti-circle-check me-1"></i> Release to Resident
                         </button>
                     @endif
 
-                    {{-- Reject button (always visible for active) --}}
+                    {{-- Reject button (always visible for authorized roles) --}}
+                    @if(auth()->user()->canDo('documents.reject'))
                     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
                         <i class="ti ti-x me-1"></i> Reject / Cancel Request
                     </button>
+                    @endif
                 </div>
             </div>
             @endif
 
             {{-- Released: Reissue option --}}
-            @if($document->status === 'released')
+            @if($document->status === 'released' && auth()->user()->canDo('documents.create'))
             <div class="mt-4 pt-3 border-top">
                 <form method="POST" action="{{ route('admin.documents.reissue', $document) }}" onsubmit="return confirm('Reissue this document as a new request?')">
                     @csrf
@@ -204,7 +206,7 @@
             @endif
 
             {{-- Cancelled: Reissue option --}}
-            @if($document->status === 'cancelled')
+            @if($document->status === 'cancelled' && auth()->user()->canDo('documents.create'))
             <div class="mt-4 pt-3 border-top">
                 <form method="POST" action="{{ route('admin.documents.reissue', $document) }}" onsubmit="return confirm('Create a new request for this document?')">
                     @csrf

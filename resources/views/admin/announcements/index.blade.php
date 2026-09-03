@@ -29,9 +29,11 @@
         </a>
     </div>
 
+    @if(auth()->user()->canDo('announcements.create'))
     <a href="{{ route('admin.announcements.create') }}" class="btn btn-navy btn-sm">
         <i class="ti ti-plus me-1"></i>New Announcement
     </a>
+    @endif
 </div>
 
 {{-- Search & Type Filter --}}
@@ -132,51 +134,57 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" title="View Details" data-bs-toggle="modal" data-bs-target="#annDetailModal-{{ $ann->id }}">
                             <i class="ti ti-eye"></i>
                         </button>
+                        @if(auth()->user()->canDo('announcements.create'))
                         <a href="{{ route('admin.announcements.edit', $ann) }}" class="btn btn-sm btn-outline-navy py-1 px-2" title="Edit Announcement">
                             <i class="ti ti-pencil"></i>
                         </a>
+                        @endif
                     </div>
 
                     <div class="d-flex gap-1 align-items-center">
-                        @if($ann->status !== 'published')
-                            <form method="POST" action="{{ route('admin.announcements.publish', $ann) }}">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-success py-1 px-2" title="Publish Live Now" style="font-size:11.5px">
-                                    <i class="ti ti-broadcast me-1"></i>Publish
+                        @if(auth()->user()->canDo('announcements.publish'))
+                            @if($ann->status !== 'published')
+                                <form method="POST" action="{{ route('admin.announcements.publish', $ann) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-success py-1 px-2" title="Publish Live Now" style="font-size:11.5px">
+                                        <i class="ti ti-broadcast me-1"></i>Publish
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if($ann->status !== 'scheduled')
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" title="Schedule Date & Time" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ $ann->id }}" style="font-size:11.5px">
+                                    <i class="ti ti-calendar-time"></i>
                                 </button>
-                            </form>
+                            @endif
+
+                            @if($ann->status === 'published')
+                                <form method="POST" action="{{ route('admin.announcements.archive', $ann) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Archive" onclick="return confirm('Archive this announcement?')" style="font-size:11.5px">
+                                        <i class="ti ti-archive"></i>
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if(in_array($ann->status, ['scheduled', 'archived']))
+                                <form method="POST" action="{{ route('admin.announcements.draft', $ann) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-warning py-1 px-2" title="Revert to Draft" style="font-size:11.5px">
+                                        <i class="ti ti-file-pencil"></i>
+                                    </button>
+                                </form>
+                            @endif
                         @endif
 
-                        @if($ann->status !== 'scheduled')
-                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" title="Schedule Date & Time" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ $ann->id }}" style="font-size:11.5px">
-                                <i class="ti ti-calendar-time"></i>
-                            </button>
-                        @endif
-
-                        @if($ann->status === 'published')
-                            <form method="POST" action="{{ route('admin.announcements.archive', $ann) }}">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Archive" onclick="return confirm('Archive this announcement?')" style="font-size:11.5px">
-                                    <i class="ti ti-archive"></i>
-                                </button>
-                            </form>
-                        @endif
-
-                        @if(in_array($ann->status, ['scheduled', 'archived']))
-                            <form method="POST" action="{{ route('admin.announcements.draft', $ann) }}">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-warning py-1 px-2" title="Revert to Draft" style="font-size:11.5px">
-                                    <i class="ti ti-file-pencil"></i>
-                                </button>
-                            </form>
-                        @endif
-
+                        @if(auth()->user()->canDo('announcements.delete'))
                         <form method="POST" action="{{ route('admin.announcements.destroy', $ann) }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete" onclick="return confirm('Delete this announcement permanently?')" style="font-size:11.5px">
                                 <i class="ti ti-trash"></i>
                             </button>
                         </form>
+                        @endif
                     </div>
                 </div>
             </div>

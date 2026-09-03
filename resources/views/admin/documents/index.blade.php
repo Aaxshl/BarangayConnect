@@ -53,12 +53,16 @@
         </select>
     </form>
     <div class="d-flex gap-2">
+        @if(auth()->user()->canDo('documents.templates'))
         <a href="{{ route('admin.documents.templates.index') }}" class="btn btn-outline-navy btn-sm">
             <i class="ti ti-template me-1"></i>Templates
         </a>
+        @endif
+        @if(auth()->user()->canDo('documents.create'))
         <a href="{{ route('admin.documents.create') }}" class="btn btn-navy btn-sm">
             <i class="ti ti-file-plus me-1"></i>Issue Document
         </a>
+        @endif
     </div>
 </div>
 
@@ -99,7 +103,7 @@
                             class="btn btn-sm btn-outline-secondary py-0 px-2" title="View">
                             <i class="ti ti-eye"></i>
                         </a>
-                        @if(in_array($doc->status, ['processing','ready_for_pickup','released']))
+                        @if(in_array($doc->status, ['processing','ready_for_pickup','released']) && auth()->user()->canDo('documents.print'))
                             <a href="{{ route('admin.documents.print',$doc) }}"
                                 class="btn btn-sm btn-outline-navy py-0 px-2" target="_blank" title="Print">
                                 <i class="ti ti-printer"></i>
@@ -165,7 +169,7 @@
                                     class="btn btn-sm btn-outline-secondary py-0 px-2">
                                     <i class="ti ti-eye"></i>
                                 </a>
-                                @if($doc->status === 'released')
+                                @if($doc->status === 'released' && auth()->user()->canDo('documents.print'))
                                     <a href="{{ route('admin.documents.print',$doc) }}"
                                         class="btn btn-sm btn-outline-navy py-0 px-2" target="_blank">
                                         <i class="ti ti-printer"></i>

@@ -16,10 +16,14 @@
             <h5 class="mb-0">{{ $resident->full_name }}</h5>
             <div style="font-family:monospace;font-size:12px;color:#888;margin:4px 0">RES-{{ str_pad($resident->id,4,'0',STR_PAD_LEFT) }}</div>
             <span class="badge-status badge-{{ $resident->status }}">{{ ucfirst($resident->status) }}</span>
-            <div class="d-flex gap-2 mt-3 justify-content-center">
+            <div class="d-flex gap-2 mt-3 justify-content-center flex-wrap">
+                @if(auth()->user()->canDo('residents.create_edit'))
                 <a href="{{ route('admin.residents.edit',$resident) }}" class="btn btn-navy btn-sm"><i class="ti ti-pencil me-1"></i>Edit</a>
+                @endif
                 <a href="{{ route('admin.residents.qr',$resident) }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-qrcode me-1"></i>QR Code</a>
+                @if(auth()->user()->canDo('documents.create'))
                 <a href="{{ route('admin.documents.create') }}?resident={{ $resident->id }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-file-plus me-1"></i>Issue Doc</a>
+                @endif
             </div>
         </div>
     </div>

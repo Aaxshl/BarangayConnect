@@ -63,6 +63,7 @@
                     <label class="form-label fw-bold text-dark mb-2"><i class="ti ti-send me-1 text-primary"></i>Publishing &amp; Scheduling Options</label>
                     
                     <div class="row g-2 mb-3">
+                        @if(auth()->user()->canDo('announcements.publish'))
                         <div class="col-12 col-md-4">
                             <div class="p-2 border rounded bg-white h-100">
                                 <div class="form-check">
@@ -88,12 +89,13 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
 
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 {{ auth()->user()->canDo('announcements.publish') ? 'col-md-4' : 'col-12' }}">
                             <div class="p-2 border rounded bg-white h-100">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="action" id="act_draft" value="draft" 
-                                        {{ old('action') === 'draft' ? 'checked' : '' }} onchange="toggleScheduleDate()">
+                                        {{ !auth()->user()->canDo('announcements.publish') || old('action') === 'draft' ? 'checked' : '' }} onchange="toggleScheduleDate()">
                                     <label class="form-check-label fw-semibold" for="act_draft" style="font-size:13px">
                                         <i class="ti ti-file-pencil text-warning me-1"></i>Save as Draft
                                     </label>

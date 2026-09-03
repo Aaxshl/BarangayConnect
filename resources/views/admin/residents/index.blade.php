@@ -20,7 +20,9 @@
             <a href="{{ route('admin.residents.index') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
         @endif
     </form>
+    @if(auth()->user()->canDo('residents.create_edit'))
     <a href="{{ route('admin.residents.create') }}" class="btn btn-navy btn-sm"><i class="ti ti-user-plus me-1"></i>Add Resident</a>
+    @endif
 </div>
 <div class="table-responsive-custom">
     <table class="table-custom">
@@ -38,9 +40,11 @@
                 <td><span class="badge-status badge-{{ $r->status }}">{{ ucfirst($r->status) }}</span></td>
                 <td>
                     <div class="d-flex gap-1">
-                        <a href="{{ route('admin.residents.show',$r) }}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="ti ti-eye"></i></a>
-                        <a href="{{ route('admin.residents.edit',$r) }}" class="btn btn-sm btn-outline-navy py-0 px-2"><i class="ti ti-pencil"></i></a>
-                        <a href="{{ route('admin.residents.qr',$r) }}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="ti ti-qrcode"></i></a>
+                        <a href="{{ route('admin.residents.show',$r) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View Profile"><i class="ti ti-eye"></i></a>
+                        @if(auth()->user()->canDo('residents.create_edit'))
+                        <a href="{{ route('admin.residents.edit',$r) }}" class="btn btn-sm btn-outline-navy py-0 px-2" title="Edit"><i class="ti ti-pencil"></i></a>
+                        @endif
+                        <a href="{{ route('admin.residents.qr',$r) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="QR Code"><i class="ti ti-qrcode"></i></a>
                     </div>
                 </td>
             </tr>

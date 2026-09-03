@@ -54,9 +54,11 @@
             @endforeach
         </select>
     </form>
+    @if(auth()->user()->canDo('services.create'))
     <a href="{{ route('admin.service-logs.create') }}" class="btn btn-navy btn-sm">
         <i class="ti ti-plus me-1"></i>New Service Log
     </a>
+    @endif
 </div>
 
 {{-- Active Service Logs Table --}}
@@ -105,9 +107,11 @@
                         <a href="{{ route('admin.service-logs.show', $log) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View">
                             <i class="ti ti-eye"></i>
                         </a>
+                        @if(auth()->user()->canDo('services.edit'))
                         <a href="{{ route('admin.service-logs.edit', $log) }}" class="btn btn-sm btn-outline-navy py-0 px-2" title="Edit">
                             <i class="ti ti-pencil"></i>
                         </a>
+                        @endif
                     </div>
                 </td>
             </tr>

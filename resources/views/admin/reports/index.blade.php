@@ -38,11 +38,13 @@
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-population">Population</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-documents">Documents</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-requests">Requests &amp; Issues</button></li>
+    @if(auth()->user()->canDo('reports.export_zip') || auth()->user()->canDo('reports.export_single'))
     <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-exports">
             <i class="ti ti-download me-1"></i>Export Hub
         </button>
     </li>
+    @endif
 </ul>
 
 <div class="tab-content">
@@ -53,6 +55,7 @@
                 <div class="card-custom">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold mb-0">Population Summary</h6>
+                        @if(auth()->user()->canDo('reports.export_single'))
                         <div class="d-flex gap-1">
                             <a href="{{ route('admin.reports.export',['type'=>'residents','format'=>'pdf']) }}" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Export PDF">
                                 <i class="ti ti-file-type-pdf me-1 text-danger"></i>PDF
@@ -61,6 +64,7 @@
                                 <i class="ti ti-file-spreadsheet me-1 text-success"></i>Excel
                             </a>
                         </div>
+                        @endif
                     </div>
                     <div class="table-responsive">
                         <table class="table table-sm table-hover mb-0" style="font-size:13.5px">
@@ -122,6 +126,7 @@
                 <div class="card-custom">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold mb-0">Document Issuance by Type</h6>
+                        @if(auth()->user()->canDo('reports.export_single'))
                         <div class="d-flex gap-1">
                             <a href="{{ route('admin.reports.export',['type'=>'documents','format'=>'pdf']) }}" class="btn btn-outline-secondary btn-sm py-1 px-2">
                                 <i class="ti ti-file-type-pdf me-1 text-danger"></i>Export PDF
@@ -130,6 +135,7 @@
                                 <i class="ti ti-file-spreadsheet me-1 text-success"></i>Export Excel
                             </a>
                         </div>
+                        @endif
                     </div>
                     @foreach($doc_by_type as $type => $count)
                     <div class="mb-3">
@@ -157,6 +163,7 @@
                 <div class="card-custom">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold mb-0">Request Summary</h6>
+                        @if(auth()->user()->canDo('reports.export_single'))
                         <div class="d-flex gap-1">
                             <a href="{{ route('admin.reports.export',['type'=>'requests','format'=>'pdf']) }}" class="btn btn-outline-secondary btn-sm py-1 px-2">
                                 <i class="ti ti-file-type-pdf me-1 text-danger"></i>PDF
@@ -165,6 +172,7 @@
                                 <i class="ti ti-file-spreadsheet me-1 text-success"></i>Excel
                             </a>
                         </div>
+                        @endif
                     </div>
                     <table class="table table-sm table-hover mb-0" style="font-size:13.5px">
                         <tbody>
@@ -200,6 +208,7 @@
     </div>
 
     {{-- Export Hub Tab --}}
+    @if(auth()->user()->canDo('reports.export_zip') || auth()->user()->canDo('reports.export_single'))
     <div class="tab-pane fade" id="tab-exports">
         {{-- Bulk ZIP Export Card --}}
         <div class="card-custom mb-4" style="border: 1px solid #c7d2fe; background: linear-gradient(to right, #f8faff, #ffffff);">

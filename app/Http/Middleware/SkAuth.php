@@ -5,7 +5,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AdminAuth {
+class SkAuth {
     public function handle(Request $request, Closure $next) {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to continue.');
@@ -18,9 +18,8 @@ class AdminAuth {
             return redirect()->route('login')->with('error', 'Your account has been deactivated.');
         }
 
-        // If SK role tries to access main admin panel, redirect to their SK portal
-        if (!$user->canAccessAdminPanel()) {
-            return redirect()->route('sk.dashboard')->with('info', 'Redirected to SK Portal.');
+        if (!$user->canAccessSkPortal()) {
+            return redirect()->route('admin.dashboard')->with('error', 'Access restricted to SK Officials.');
         }
 
         return $next($request);

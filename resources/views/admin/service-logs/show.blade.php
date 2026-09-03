@@ -10,9 +10,11 @@
         <span class="badge-status badge-{{ $serviceLog->status }}">
             {{ ucwords(str_replace('_',' ',$serviceLog->status)) }}
         </span>
+        @if(auth()->user()->canDo('services.edit'))
         <a href="{{ route('admin.service-logs.edit', $serviceLog) }}" class="btn btn-outline-navy btn-sm">
             <i class="ti ti-pencil me-1"></i> Edit Details
         </a>
+        @endif
     </div>
 </div>
 
@@ -170,7 +172,7 @@
                 <div class="d-flex gap-2 flex-wrap align-items-center">
 
                     {{-- Pending: Assign button --}}
-                    @if($serviceLog->status === 'pending')
+                    @if($serviceLog->status === 'pending' && auth()->user()->canDo('services.assign'))
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
                             <i class="ti ti-user-plus me-1"></i> Assign Officer &amp; Schedule
                         </button>
@@ -178,6 +180,7 @@
 
                     {{-- Assigned: Start button or Reassign --}}
                     @if($serviceLog->status === 'assigned')
+                        @if(auth()->user()->canDo('services.status'))
                         <form method="POST" action="{{ route('admin.service-logs.status', $serviceLog) }}">
                             @csrf
                             <input type="hidden" name="action" value="start">
@@ -185,20 +188,23 @@
                                 <i class="ti ti-activity me-1"></i> Start Service / Ongoing
                             </button>
                         </form>
+                        @endif
+                        @if(auth()->user()->canDo('services.assign'))
                         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#assignModal">
                             <i class="ti ti-refresh me-1"></i> Reassign / Reschedule
                         </button>
+                        @endif
                     @endif
 
                     {{-- In Progress: Resolve button --}}
-                    @if($serviceLog->status === 'in_progress')
+                    @if($serviceLog->status === 'in_progress' && auth()->user()->canDo('services.status'))
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#resolveModal">
                             <i class="ti ti-circle-check me-1"></i> Mark as Resolved / Completed
                         </button>
                     @endif
 
                     {{-- Resolved: Close button --}}
-                    @if($serviceLog->status === 'resolved')
+                    @if($serviceLog->status === 'resolved' && auth()->user()->canDo('services.status'))
                         <form method="POST" action="{{ route('admin.service-logs.status', $serviceLog) }}">
                             @csrf
                             <input type="hidden" name="action" value="close">
@@ -209,7 +215,7 @@
                     @endif
 
                     {{-- Reopen option for Resolved, Closed, or Cancelled --}}
-                    @if(in_array($serviceLog->status, ['resolved', 'closed', 'cancelled']))
+                    @if(in_array($serviceLog->status, ['resolved', 'closed', 'cancelled']) && auth()->user()->canDo('services.status'))
                         <form method="POST" action="{{ route('admin.service-logs.status', $serviceLog) }}">
                             @csrf
                             <input type="hidden" name="action" value="reopen">
@@ -220,7 +226,7 @@
                     @endif
 
                     {{-- Cancel button (available for active statuses) --}}
-                    @if(!in_array($serviceLog->status, ['closed', 'cancelled']))
+                    @if(!in_array($serviceLog->status, ['closed', 'cancelled']) && auth()->user()->canDo('services.status'))
                         <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">
                             <i class="ti ti-x me-1"></i> Cancel / Dismiss
                         </button>

@@ -182,6 +182,7 @@
                 <div class="alert alert-info py-2 mb-3 small">
                     <i class="ti ti-user-check me-1"></i>Assigned to <strong>{{ optional($citizenRequest->assignedTo)->name }}</strong>. Ready to begin work.
                 </div>
+                @if(auth()->user()->canDo('requests.status'))
                 <form method="POST" action="{{ route('admin.citizen-requests.status', $citizenRequest) }}" class="mb-2">
                     @csrf
                     <input type="hidden" name="status" value="in_progress">
@@ -189,19 +190,23 @@
                         <i class="ti ti-player-play me-1"></i>Start Investigation / In Progress
                     </button>
                 </form>
+                @endif
 
             @elseif($citizenRequest->status === 'in_progress')
                 <div class="alert alert-primary py-2 mb-3 small">
                     <i class="ti ti-tools me-1"></i><strong>Work is currently in progress.</strong> When completed, mark as resolved with a note.
                 </div>
+                @if(auth()->user()->canDo('requests.status'))
                 <button type="button" class="btn btn-success w-100 py-2 mb-2" data-bs-toggle="modal" data-bs-target="#resolveModal">
                     <i class="ti ti-circle-check me-1"></i>Mark as Resolved
                 </button>
+                @endif
 
             @elseif($citizenRequest->status === 'resolved')
                 <div class="alert alert-success py-2 mb-3 small">
                     <i class="ti ti-check-circle me-1"></i><strong>Case Resolved!</strong>
                 </div>
+                @if(auth()->user()->canDo('requests.status'))
                 <form method="POST" action="{{ route('admin.citizen-requests.status', $citizenRequest) }}" class="mb-2">
                     @csrf
                     <input type="hidden" name="status" value="in_progress">
@@ -209,11 +214,13 @@
                         <i class="ti ti-rotate-2 me-1"></i>Reopen Request (In Progress)
                     </button>
                 </form>
+                @endif
 
             @elseif($citizenRequest->status === 'closed')
                 <div class="alert alert-secondary py-2 mb-3 small">
                     <i class="ti ti-lock me-1"></i>This request is closed.
                 </div>
+                @if(auth()->user()->canDo('requests.status'))
                 <form method="POST" action="{{ route('admin.citizen-requests.status', $citizenRequest) }}">
                     @csrf
                     <input type="hidden" name="status" value="under_review">
@@ -221,10 +228,12 @@
                         <i class="ti ti-rotate-2 me-1"></i>Reopen for Review
                     </button>
                 </form>
+                @endif
             @endif
         </div>
 
         {{-- Staff Assignment Card --}}
+        @if(auth()->user()->canDo('requests.assign'))
         <div class="card-custom mb-3">
             <h6 class="fw-bold mb-3"><i class="ti ti-user-plus me-1"></i>Assign Staff</h6>
             <form method="POST" action="{{ route('admin.citizen-requests.assign', $citizenRequest) }}">
@@ -244,17 +253,21 @@
                 </button>
             </form>
         </div>
+        @endif
 
         {{-- More Actions Card --}}
+        @if(auth()->user()->canDo('requests.convert') || auth()->user()->canDo('requests.delete'))
         <div class="card-custom">
             <h6 class="fw-semibold mb-2">More Actions</h6>
+            @if(auth()->user()->canDo('requests.convert'))
             <form method="POST" action="{{ route('admin.citizen-requests.convert', $citizenRequest) }}">
                 @csrf
                 <button type="submit" class="btn btn-outline-navy btn-sm w-100 mb-2">
                     <i class="ti ti-list-check me-1"></i>Convert to Blotter / Service Log
                 </button>
             </form>
-            @if($citizenRequest->status !== 'closed')
+            @endif
+            @if($citizenRequest->status !== 'closed' && auth()->user()->canDo('requests.delete'))
             <form method="POST" action="{{ route('admin.citizen-requests.destroy', $citizenRequest) }}" onsubmit="return confirm('Close this citizen report?')">
                 @csrf @method('DELETE')
                 <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
@@ -263,6 +276,7 @@
             </form>
             @endif
         </div>
+        @endif
     </div>
 </div>
 
