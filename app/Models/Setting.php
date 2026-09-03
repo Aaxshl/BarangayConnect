@@ -125,6 +125,32 @@ class Setting extends Model {
         ],
     ];
 
+    const DEFAULT_AGE_BRACKETS = [
+        [
+            'category' => 'Childhood & Youth',
+            'brackets' => [
+                ['min' => 0, 'max' => 12, 'label' => 'Children (Infancy, Toddlerhood, & Middle Childhood)'],
+                ['min' => 13, 'max' => 17, 'label' => 'Adolescents / Teens'],
+            ],
+        ],
+        [
+            'category' => 'Adult Demographics',
+            'brackets' => [
+                ['min' => 18, 'max' => 24, 'label' => 'Young Adults (Transitioning into higher education or early workforce)'],
+                ['min' => 25, 'max' => 34, 'label' => 'Early Career & Family-Building'],
+                ['min' => 35, 'max' => 44, 'label' => 'Mid-Career & Established Adulthood'],
+                ['min' => 45, 'max' => 54, 'label' => 'Mature Adulthood'],
+                ['min' => 55, 'max' => 64, 'label' => 'Pre-Retirement Years'],
+            ],
+        ],
+        [
+            'category' => 'Seniors',
+            'brackets' => [
+                ['min' => 65, 'max' => null, 'label' => 'Senior Citizens & Retirees'],
+            ],
+        ],
+    ];
+
     public static function get($key, $default = null) {
         $setting = self::where('key', $key)->first();
         return $setting ? $setting->value : $default;
@@ -132,6 +158,27 @@ class Setting extends Model {
 
     public static function set($key, $value) {
         return self::updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+
+    /**
+     * Retrieve demographic age brackets configured for legislative/councilor overview.
+     */
+    public static function getAgeBrackets(): array {
+        $stored = self::get('demographic_age_brackets');
+        if ($stored) {
+            $decoded = json_decode($stored, true);
+            if (is_array($decoded) && !empty($decoded)) {
+                return $decoded;
+            }
+        }
+        return self::DEFAULT_AGE_BRACKETS;
+    }
+
+    /**
+     * Store demographic age brackets configuration.
+     */
+    public static function setAgeBrackets(array $brackets): void {
+        self::set('demographic_age_brackets', json_encode($brackets));
     }
 
     /**

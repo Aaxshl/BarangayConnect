@@ -124,6 +124,8 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::put('/settings/permissions', [SettingController::class, 'updatePermissions'])->name('settings.permissions');
         Route::post('/settings/permissions/reset', [SettingController::class, 'resetPermissions'])->name('settings.permissions.reset');
+        Route::put('/settings/brackets', [SettingController::class, 'updateAgeBrackets'])->name('settings.brackets');
+        Route::post('/settings/brackets/reset', [SettingController::class, 'resetAgeBrackets'])->name('settings.brackets.reset');
         Route::post('/settings/logo', [SettingController::class, 'uploadLogo'])->name('settings.logo');
     });
 

@@ -11,6 +11,11 @@
         </button>
     </li>
     <li class="nav-item" role="presentation">
+        <button class="nav-link fw-semibold" id="demographics-tab" data-bs-toggle="tab" data-bs-target="#demographics-pane" type="button" role="tab" style="font-size:13.5px;border-radius:8px;padding:8px 16px">
+            <i class="ti ti-chart-pie me-1"></i> Demographics &amp; Age Brackets
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
         <button class="nav-link fw-semibold" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions-pane" type="button" role="tab" style="font-size:13.5px;border-radius:8px;padding:8px 16px">
             <i class="ti ti-shield-lock me-1"></i> Role Permissions Matrix
         </button>
@@ -85,7 +90,94 @@
         </div>
     </div>
 
-    {{-- TAB 2: Role Permissions Matrix --}}
+    {{-- TAB 2: Demographics & Age Brackets --}}
+    <div class="tab-pane fade" id="demographics-pane" role="tabpanel">
+        <div class="card-custom mb-3 p-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="ti ti-chart-pie text-primary me-2"></i>Demographic Age Brackets</h5>
+                    <div class="text-muted" style="font-size:13px">
+                        Configure the age groups and demographic categorization displayed in the <strong>Barangay Kagawad (Councilor) Dashboard</strong>, Population Reports, and Analytics.
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <form method="POST" action="{{ route('admin.settings.brackets.reset') }}" onsubmit="return confirm('Reset demographic age brackets to standard defaults?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="ti ti-refresh me-1"></i>Reset to Defaults
+                        </button>
+                    </form>
+                    <button type="submit" form="bracketsForm" class="btn btn-navy btn-sm">
+                        <i class="ti ti-device-floppy me-1"></i>Save Age Brackets
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('admin.settings.brackets') }}" id="bracketsForm">
+            @csrf @method('PUT')
+            
+            <div class="row g-3">
+                @foreach($ageBrackets as $cIdx => $category)
+                <div class="col-12">
+                    <div class="card-custom">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-navy px-2 py-1" style="font-size:12px">Category {{ $cIdx + 1 }}</span>
+                                <input type="text" name="categories[{{ $cIdx }}][category]" class="form-control form-control-sm fw-bold" style="width:250px;font-size:14px" value="{{ $category['category'] ?? '' }}" required>
+                            </div>
+                            <span class="text-muted small">{{ count($category['brackets'] ?? []) }} Brackets</span>
+                        </div>
+
+                        <div class="table-responsive-custom">
+                            <table class="table-custom align-middle">
+                                <thead>
+                                    <tr style="background:#f8fafc">
+                                        <th style="width:15%">Min Age</th>
+                                        <th style="width:15%">Max Age</th>
+                                        <th style="width:70%">Demographic Description / Label</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($category['brackets'] ?? [] as $bIdx => $b)
+                                    <tr>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" min="0" max="150" name="categories[{{ $cIdx }}][brackets][{{ $bIdx }}][min]" class="form-control form-control-sm" value="{{ $b['min'] ?? 0 }}" required>
+                                                <span class="input-group-text">yrs</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" min="0" max="150" name="categories[{{ $cIdx }}][brackets][{{ $bIdx }}][max]" class="form-control form-control-sm" value="{{ $b['max'] !== null && $b['max'] !== '' ? $b['max'] : '' }}" placeholder="and over">
+                                                <span class="input-group-text">yrs</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="categories[{{ $cIdx }}][brackets][{{ $bIdx }}][label]" class="form-control form-control-sm" value="{{ $b['label'] ?? '' }}" placeholder="e.g. Children (Infancy, Toddlerhood...)" required>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <div class="card-custom mt-3 d-flex justify-content-between align-items-center p-3 flex-wrap gap-2">
+                <div class="text-muted small">
+                    <i class="ti ti-info-circle me-1 text-primary"></i> Leaving <strong>Max Age</strong> empty treats the bracket as <em>"and over"</em> (e.g. 65 and over for Senior Citizens).
+                </div>
+                <button type="submit" class="btn btn-navy">
+                    <i class="ti ti-device-floppy me-1"></i>Save Age Brackets
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {{-- TAB 3: Role Permissions Matrix --}}
     <div class="tab-pane fade" id="permissions-pane" role="tabpanel">
         <div class="card-custom mb-3 p-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">

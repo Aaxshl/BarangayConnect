@@ -10,8 +10,9 @@ class SettingController extends Controller {
         $permissionCatalog = Setting::PERMISSIONS;
         $permissionsMatrix = Setting::getPermissionsMatrix();
         $managedRoles = Setting::MANAGED_ROLES;
+        $ageBrackets = Setting::getAgeBrackets();
 
-        return view('admin.settings.index', compact('settings', 'permissionCatalog', 'permissionsMatrix', 'managedRoles'));
+        return view('admin.settings.index', compact('settings', 'permissionCatalog', 'permissionsMatrix', 'managedRoles', 'ageBrackets'));
     }
 
     public function update(Request $request) {
@@ -56,6 +57,49 @@ class SettingController extends Controller {
     public function resetPermissions() {
         Setting::setPermissionsMatrix(Setting::DEFAULT_ROLE_PERMISSIONS);
         return back()->with('success', 'Role permissions reset to default configuration.');
+    }
+
+    public function updateAgeBrackets(Request $request) {
+        $submitted = $request->input('categories', []);
+        $brackets = [];
+
+        foreach ($submitted as $cat) {
+            $catName = trim($cat['category'] ?? '');
+            if (!$catName) continue;
+
+            $items = [];
+            foreach ($cat['brackets'] ?? [] as $b) {
+                $min = isset($b['min']) && $b['min'] !== '' ? (int)$b['min'] : 0;
+                $max = isset($b['max']) && $b['max'] !== '' && $b['max'] !== null ? (int)$b['max'] : null;
+                $label = trim($b['label'] ?? '');
+                if (!$label) continue;
+
+                $items[] = [
+                    'min' => $min,
+                    'max' => $max,
+                    'label' => $label,
+                ];
+            }
+
+            if (!empty($items)) {
+                $brackets[] = [
+                    'category' => $catName,
+                    'brackets' => $items,
+                ];
+            }
+        }
+
+        if (!empty($brackets)) {
+            Setting::setAgeBrackets($brackets);
+            return back()->with('success', 'Demographic age brackets updated successfully.');
+        }
+
+        return back()->with('error', 'Please provide at least one valid age category and bracket.');
+    }
+
+    public function resetAgeBrackets() {
+        Setting::setAgeBrackets(Setting::DEFAULT_AGE_BRACKETS);
+        return back()->with('success', 'Demographic age brackets reset to standard defaults.');
     }
 
     public function uploadLogo(Request $request) {
