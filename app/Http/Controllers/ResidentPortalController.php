@@ -167,9 +167,28 @@ class ResidentPortalController extends Controller {
         abort_unless($item, 404);
         return view('resident.track-detail', compact('item','tracking'));
     }
-    public function announcements() {
-        $announcements = Announcement::published()->latest('published_at')->paginate(10);
-        return view('resident.announcements', compact('announcements'));
+    public function announcements(Request $request) {
+        $query = Announcement::published();
+
+        if ($request->source === 'sk') {
+            $query->sk();
+        } elseif ($request->source === 'barangay') {
+            $query->barangay();
+        }
+
+        if ($request->filled('type')) {
+            $query->where('announcement_type', $request->type);
+        }
+
+        $announcements = $query->latest('published_at')->paginate(12)->withQueryString();
+
+        $counts = [
+            'all'      => Announcement::published()->count(),
+            'barangay' => Announcement::published()->barangay()->count(),
+            'sk'       => Announcement::published()->sk()->count(),
+        ];
+
+        return view('resident.announcements', compact('announcements', 'counts'));
     }
     public function profile() {
         $resident = $this->getResident();

@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class AnnouncementController extends Controller {
     public function index(Request $request) {
-        $query = Announcement::with('createdBy');
+        $query = Announcement::barangay()->with('createdBy');
 
         $query->when($request->search, function ($q, $s) {
             $q->where(function ($sub) use ($s) {
@@ -23,11 +23,11 @@ class AnnouncementController extends Controller {
         $announcements = $query->latest()->paginate(12)->withQueryString();
 
         $counts = [
-            'all'       => Announcement::count(),
-            'published' => Announcement::where('status', 'published')->count(),
-            'scheduled' => Announcement::where('status', 'scheduled')->count(),
-            'draft'     => Announcement::where('status', 'draft')->count(),
-            'archived'  => Announcement::where('status', 'archived')->count(),
+            'all'       => Announcement::barangay()->count(),
+            'published' => Announcement::barangay()->where('status', 'published')->count(),
+            'scheduled' => Announcement::barangay()->where('status', 'scheduled')->count(),
+            'draft'     => Announcement::barangay()->where('status', 'draft')->count(),
+            'archived'  => Announcement::barangay()->where('status', 'archived')->count(),
         ];
 
         return view('admin.announcements.index', compact('announcements', 'counts'));
@@ -79,15 +79,19 @@ class AnnouncementController extends Controller {
     }
 
     public function show(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
         $announcement->load('createdBy');
         return view('admin.announcements.show', compact('announcement'));
     }
 
     public function edit(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
         return view('admin.announcements.edit', compact('announcement'));
     }
 
     public function update(Request $request, Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         $validated = $request->validate([
             'title'             => 'required|string|max:255',
             'body'              => 'required|string',
@@ -134,6 +138,8 @@ class AnnouncementController extends Controller {
     }
 
     public function destroy(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         if ($announcement->image) {
             Storage::disk('public')->delete($announcement->image);
         }
@@ -142,6 +148,8 @@ class AnnouncementController extends Controller {
     }
 
     public function publish(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         $announcement->update([
             'status'       => 'published',
             'published_at' => now(),
@@ -151,6 +159,8 @@ class AnnouncementController extends Controller {
     }
 
     public function schedule(Request $request, Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         $request->validate([
             'scheduled_at' => 'required|date',
         ]);
@@ -165,6 +175,8 @@ class AnnouncementController extends Controller {
     }
 
     public function archive(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         $announcement->update([
             'status'      => 'archived',
             'archived_at' => now(),
@@ -173,11 +185,22 @@ class AnnouncementController extends Controller {
     }
 
     public function revertToDraft(Announcement $announcement) {
+        $this->authorizeBarangayAnnouncement($announcement);
+
         $announcement->update([
             'status'       => 'draft',
             'published_at' => null,
             'archived_at'  => null,
         ]);
         return back()->with('success', 'Announcement moved back to drafts.');
+    }
+
+    /**
+     * Prevent Barangay Officials from accessing or altering SK announcements.
+     */
+    private function authorizeBarangayAnnouncement(Announcement $announcement): void {
+        if ($announcement->isSkAnnouncement()) {
+            abort(403, 'Access denied. Sangguniang Kabataan (SK) announcements can only be managed from the SK Portal.');
+        }
     }
 }

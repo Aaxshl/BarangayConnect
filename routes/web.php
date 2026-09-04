@@ -17,6 +17,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidentPortalController;
 use App\Http\Controllers\SkController;
+use App\Http\Controllers\SkProgramController;
+use App\Http\Controllers\SkAnnouncementController;
+use App\Http\Controllers\SkCouncilorController;
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -139,4 +142,11 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
 // SK Portal Routes (Sangguniang Kabataan)
 Route::middleware('auth.sk')->prefix('sk')->name('sk.')->group(function () {
     Route::get('/dashboard', [SkController::class, 'dashboard'])->name('dashboard');
+    Route::get('/youth-residents', [SkController::class, 'youthResidents'])->name('youth-residents.index');
+    Route::get('/youth-residents/{resident}', [SkController::class, 'youthResidentShow'])->name('youth-residents.show');
+    Route::resource('programs', SkProgramController::class);
+    Route::post('/programs/{program}/status', [SkProgramController::class, 'updateStatus'])->name('programs.status');
+    Route::resource('announcements', SkAnnouncementController::class);
+    Route::resource('councilors', SkCouncilorController::class);
+    Route::post('/councilors/{councilor}/toggle', [SkCouncilorController::class, 'toggleStatus'])->name('councilors.toggle');
 });

@@ -64,8 +64,15 @@
                         </div>
                     @endif
                     <div class="flex-grow-1">
-                        <div class="announce-type" style="font-size:11px;font-weight:700;color:#185fa5;text-transform:uppercase;margin-bottom:2px">
-                            {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                        <div class="d-flex align-items-center gap-1 mb-1 flex-wrap">
+                            <span class="announce-type" style="font-size:10px;font-weight:700;color:#185fa5;text-transform:uppercase">
+                                {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                            </span>
+                            @if($ann->isSkAnnouncement())
+                                <span class="badge bg-warning text-dark fw-bold" style="font-size:9.5px;padding:2px 6px;border-radius:4px">
+                                    ⚡ SK
+                                </span>
+                            @endif
                         </div>
                         <div class="announce-title fw-bold" style="font-size:14px;color:#1e293b;line-height:1.3;margin-bottom:4px">
                             {{ $ann->title }}
@@ -90,14 +97,25 @@
                         @endif
                         <div class="modal-header {{ $ann->image ? 'border-0 pb-0' : '' }}" style="padding: 24px 28px 12px;">
                             <div class="w-100">
-                                <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
-                                    {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                                </span>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                                        {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                                    </span>
+                                    @if($ann->isSkAnnouncement())
+                                        <span class="badge bg-warning text-dark fw-bold" style="font-size:10.5px;padding:3px 8px;border-radius:6px">
+                                            ⚡ Sangguniang Kabataan (SK)
+                                        </span>
+                                    @endif
+                                </div>
                                 <h4 class="modal-title fw-bold text-dark mt-2 mb-2" id="dashAnnLabel-{{ $ann->id }}" style="font-size:20px;line-height:1.35">
                                     {{ $ann->title }}
                                 </h4>
-                                <div class="text-muted small d-flex align-items-center gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
+                                <div class="text-muted small d-flex align-items-center flex-wrap gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
                                     <span><i class="ti ti-calendar me-1 text-primary"></i>Posted {{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
+                                    @if($ann->isSkAnnouncement())
+                                        <span>•</span>
+                                        <span><i class="ti ti-bolt me-1 text-warning"></i>Posted by: <strong>Sangguniang Kabataan (SK)</strong></span>
+                                    @endif
                                 </div>
                             </div>
                             @if(!$ann->image)

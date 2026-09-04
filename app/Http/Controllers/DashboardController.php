@@ -70,7 +70,7 @@ class DashboardController extends Controller {
                                     ->groupBy('document_type')->pluck('total', 'document_type'),
             'top_issues'       => CitizenRequest::selectRaw('request_type, count(*) as total')
                                     ->groupBy('request_type')->orderByDesc('total')->limit(5)->get(),
-            'announcements'    => Announcement::published()->latest('published_at')->limit(3)->get(),
+            'announcements'    => Announcement::barangay()->published()->latest('published_at')->limit(3)->get(),
         ];
     }
 
@@ -93,7 +93,7 @@ class DashboardController extends Controller {
             'recent_activity'  => $this->getRecentActivity(8),
             'php_version'      => PHP_VERSION,
             'db_driver'        => strtoupper(\Illuminate\Support\Facades\DB::connection()->getDriverName()),
-            'announcements'    => Announcement::latest()->limit(3)->get(),
+            'announcements'    => Announcement::barangay()->latest()->limit(3)->get(),
         ];
     }
 
@@ -109,7 +109,7 @@ class DashboardController extends Controller {
             'pending_requests'    => CitizenRequest::whereIn('status', ['pending', 'under_review'])->count(),
             'urgent_requests'     => CitizenRequest::where('status', 'pending')
                                         ->where('created_at', '<=', now()->subDays(3))->count(),
-            'draft_announcements' => Announcement::where('status', 'draft')->count(),
+            'draft_announcements' => Announcement::barangay()->where('status', 'draft')->count(),
             'actionable_docs'     => Document::with('resident')
                                         ->whereIn('status', ['pending', 'under_review', 'processing'])
                                         ->latest()->limit(6)->get(),
@@ -191,7 +191,7 @@ class DashboardController extends Controller {
             'demographics'     => $demographics,
             'top_issues'       => CitizenRequest::selectRaw('request_type, count(*) as total')
                                     ->groupBy('request_type')->orderByDesc('total')->limit(5)->get(),
-            'announcements'    => Announcement::published()->latest('published_at')->limit(4)->get(),
+            'announcements'    => Announcement::barangay()->published()->latest('published_at')->limit(4)->get(),
         ];
     }
 

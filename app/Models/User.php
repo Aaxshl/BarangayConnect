@@ -95,6 +95,10 @@ class User extends Authenticatable {
         return in_array($this->role, ['captain', 'administrator']);
     }
 
+    public function canManageSkCouncilors(): bool {
+        return in_array($this->role, ['sk_chairman', 'captain', 'administrator']);
+    }
+
     public function canAccessAdminPanel(): bool {
         return !in_array($this->role, ['sk_chairman', 'sk_councilor']);
     }

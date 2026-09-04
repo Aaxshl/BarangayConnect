@@ -3,7 +3,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\{User, Household, Resident, Document, ServiceLog, CitizenRequest, Announcement, Setting};
+use App\Models\{User, Household, Resident, Document, ServiceLog, CitizenRequest, Announcement, Setting, SkProgram};
 
 class DatabaseSeeder extends Seeder {
     public function run(): void {
@@ -123,6 +123,133 @@ class DatabaseSeeder extends Seeder {
         Announcement::firstOrCreate(
             ['title' => 'Road Closure — Calle Rizal'],
             ['body'=>'Calle Rizal will be temporarily closed for drainage repair works. Please use the Purok 3 road as an alternative route. We apologize for any inconvenience.','announcement_type'=>'public_advisory','status'=>'draft','created_by'=>$admin->id]
+        );
+
+        // Youth Residents (Ages 15-30)
+        $y1 = Resident::firstOrCreate(
+            ['contact_number' => '09181112233'],
+            [
+                'first_name'     => 'Mark Anthony',
+                'last_name'      => 'Reyes',
+                'middle_name'    => 'Santos',
+                'birthdate'      => date('Y') - 16 . '-05-12', // 16 yrs old (Teen)
+                'gender'         => 'male',
+                'civil_status'   => 'single',
+                'address'        => '123 Purok 1, Zone A',
+                'purok'          => 'Purok 1',
+                'zone'           => 'Zone A',
+                'occupation'     => 'High School Student',
+                'household_id'   => $h1->id,
+                'status'         => 'active',
+                'created_by'     => $admin->id
+            ]
+        );
+
+        $y2 = Resident::firstOrCreate(
+            ['contact_number' => '09192223344'],
+            [
+                'first_name'     => 'Bea Nicole',
+                'last_name'      => 'Santos',
+                'middle_name'    => 'Dela Cruz',
+                'birthdate'      => date('Y') - 21 . '-08-19', // 21 yrs old (Young Adult)
+                'gender'         => 'female',
+                'civil_status'   => 'single',
+                'address'        => '456 Purok 2, Zone B',
+                'purok'          => 'Purok 2',
+                'zone'           => 'Zone B',
+                'occupation'     => 'College Student',
+                'household_id'   => $h2->id,
+                'status'         => 'active',
+                'created_by'     => $admin->id
+            ]
+        );
+
+        $y3 = Resident::firstOrCreate(
+            ['contact_number' => '09203334455'],
+            [
+                'first_name'     => 'Justin Kyle',
+                'last_name'      => 'Villanueva',
+                'middle_name'    => 'Bautista',
+                'birthdate'      => date('Y') - 27 . '-02-10', // 27 yrs old (Adult Youth)
+                'gender'         => 'male',
+                'civil_status'   => 'single',
+                'address'        => '789 Purok 3, Zone A',
+                'purok'          => 'Purok 3',
+                'zone'           => 'Zone A',
+                'occupation'     => 'Junior Web Developer',
+                'household_id'   => $h3->id,
+                'status'         => 'active',
+                'created_by'     => $admin->id
+            ]
+        );
+
+        // SK Programs & Initiatives
+        SkProgram::firstOrCreate(
+            ['title' => 'Annual Inter-Purok Youth Basketball & Volleyball League'],
+            [
+                'category'            => 'sports_and_wellness',
+                'description'         => 'Promoting camaraderie, sportsmanship, and physical wellness among barangay youth. Open to all residents aged 15-30 across all puroks.',
+                'location'            => 'Barangay Covered Court',
+                'budget'              => 45000.00,
+                'target_participants' => 180,
+                'start_date'          => today()->addDays(5),
+                'end_date'            => today()->addDays(35),
+                'status'              => 'ongoing',
+                'coordinator_id'      => $skCouncilor->id,
+                'created_by'          => $skChair->id,
+                'remarks'             => 'Referees and jerseys procured. Team registration ongoing.',
+            ]
+        );
+
+        SkProgram::firstOrCreate(
+            ['title' => 'SK Linggo ng Kabataan: Leadership & Anti-Drug Abuse Seminar'],
+            [
+                'category'            => 'leadership_and_governance',
+                'description'         => 'A comprehensive two-day workshop covering youth civic engagement, public speaking, mental health, and substance abuse prevention with guest speakers from NYC and PDEA.',
+                'location'            => 'Barangay Multi-Purpose Hall',
+                'budget'              => 25000.00,
+                'target_participants' => 120,
+                'start_date'          => today()->addDays(14),
+                'end_date'            => today()->addDays(15),
+                'status'              => 'approved',
+                'coordinator_id'      => $skChair->id,
+                'created_by'          => $skChair->id,
+                'remarks'             => 'Approved by SK council. Invitations distributed to local schools.',
+            ]
+        );
+
+        SkProgram::firstOrCreate(
+            ['title' => 'Libreng College Entrance Exam (UPCAT/PUPCET) Review Program'],
+            [
+                'category'            => 'education_and_scholarship',
+                'description'         => 'Free weekend intensive tutorial sessions and review materials for graduating senior high school students aiming for state universities.',
+                'location'            => 'Barangay E-Library & Learning Hub',
+                'budget'              => 35000.00,
+                'target_participants' => 60,
+                'start_date'          => today()->addDays(30),
+                'end_date'            => today()->addDays(60),
+                'status'              => 'proposed',
+                'coordinator_id'      => $skCouncilor->id,
+                'created_by'          => $skCouncilor->id,
+                'remarks'             => 'Awaiting partner volunteer teachers from university alumni.',
+            ]
+        );
+
+        SkProgram::firstOrCreate(
+            ['title' => 'Tapat Ko, Linis Ko: Youth River Clean-up & Tree Planting Drive'],
+            [
+                'category'            => 'environmental_protection',
+                'description'         => 'Environmental rehabilitation of the local riverbanks and planting 200 native seedlings to prevent soil erosion and promote ecological balance.',
+                'location'            => 'Barangay Riverbank & Purok 3 Green Zone',
+                'budget'              => 15000.00,
+                'target_participants' => 90,
+                'start_date'          => today()->subDays(20),
+                'end_date'            => today()->subDays(20),
+                'status'              => 'completed',
+                'coordinator_id'      => $skCouncilor->id,
+                'created_by'          => $skChair->id,
+                'remarks'             => 'Successfully planted 210 seedlings with 95 volunteer youth participants.',
+            ]
         );
     }
 }

@@ -276,9 +276,16 @@
                             </div>
                         @endif
                         <div class="announcement-body">
-                            <span class="announcement-badge {{ strtolower($ann->announcement_type) }}">
-                                {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <span class="announcement-badge mb-0 {{ strtolower($ann->announcement_type) }}">
+                                    {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                                </span>
+                                @if($ann->isSkAnnouncement())
+                                    <span class="badge bg-warning text-dark fw-bold d-inline-flex align-items-center gap-1" style="font-size:10.5px;padding:4px 8px;border-radius:6px">
+                                        ⚡ Sangguniang Kabataan (SK)
+                                    </span>
+                                @endif
+                            </div>
                             <h5 class="announcement-title-large">{{ $ann->title }}</h5>
                             <p class="announcement-text-large">{{ Str::limit($ann->body, 130) }}</p>
                             <div class="announcement-date d-flex justify-content-between align-items-center">
@@ -323,16 +330,29 @@
             @endif
             <div class="modal-header {{ $ann->image ? 'border-0 pb-0' : '' }}" style="padding: 24px 28px 12px;">
                 <div class="w-100">
-                    <span class="announcement-badge {{ strtolower($ann->announcement_type) }}">
-                        {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                    </span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="announcement-badge mb-0 {{ strtolower($ann->announcement_type) }}">
+                            {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                        </span>
+                        @if($ann->isSkAnnouncement())
+                            <span class="badge bg-warning text-dark fw-bold d-inline-flex align-items-center gap-1" style="font-size:11px;padding:4px 9px;border-radius:6px">
+                                ⚡ Official SK Youth Announcement
+                            </span>
+                        @endif
+                    </div>
                     <h4 class="modal-title fw-bold text-dark mt-2 mb-2" id="annModalLabel-{{ $ann->id }}" style="font-size:22px;line-height:1.35">
                         {{ $ann->title }}
                     </h4>
                     <div class="text-muted small d-flex align-items-center flex-wrap gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
                         <span><i class="ti ti-calendar me-1 text-primary"></i>Posted on {{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
                         <span>•</span>
-                        <span><i class="ti ti-building-community me-1 text-primary"></i>{{ $settings['barangay_name'] ?? 'Barangay Office' }}</span>
+                        <span>
+                            @if($ann->isSkAnnouncement())
+                                <i class="ti ti-bolt me-1 text-warning"></i>Posted by: <strong>Sangguniang Kabataan (SK)</strong>
+                            @else
+                                <i class="ti ti-building-community me-1 text-primary"></i>{{ $settings['barangay_name'] ?? 'Barangay Office' }}
+                            @endif
+                        </span>
                     </div>
                 </div>
                 @if(!$ann->image)
@@ -343,7 +363,11 @@
                 <div style="white-space:pre-line;">{!! nl2br(e($ann->body)) !!}</div>
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between" style="border-top:1px solid #e2e8f0;padding:12px 28px;">
-                <span class="small text-muted"><i class="ti ti-shield-check me-1 text-success"></i>Official Barangay Announcement</span>
+                @if($ann->isSkAnnouncement())
+                    <span class="small text-muted"><i class="ti ti-bolt me-1 text-primary"></i>Official Sangguniang Kabataan Advisory</span>
+                @else
+                    <span class="small text-muted"><i class="ti ti-shield-check me-1 text-success"></i>Official Barangay Announcement</span>
+                @endif
                 <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal" style="border-radius:8px">Close</button>
             </div>
         </div>

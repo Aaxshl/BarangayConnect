@@ -2,10 +2,31 @@
 @section('title','Announcements')
 @section('content')
 <div class="container-fluid px-3 px-md-4 mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <div class="text-uppercase fw-bold small text-primary" style="letter-spacing:0.8px">Barangay Updates</div>
             <h2 class="section-title mb-0" style="font-size:22px;font-weight:800;color:#1e293b">Announcements &amp; Advisories</h2>
+        </div>
+    </div>
+
+    {{-- Source Filter Pills --}}
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('portal.announcements', request()->only('type')) }}" 
+               class="btn btn-sm {{ !request('source') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" 
+               style="border-radius:20px;padding:5px 16px;font-weight:600;font-size:13px">
+                All Announcements <span class="badge {{ !request('source') ? 'bg-light text-dark' : 'bg-secondary' }} ms-1">{{ $counts['all'] ?? $announcements->total() }}</span>
+            </a>
+            <a href="{{ route('portal.announcements', array_merge(request()->only('type'), ['source' => 'barangay'])) }}" 
+               class="btn btn-sm {{ request('source') === 'barangay' ? 'btn-primary text-white' : 'btn-outline-secondary' }}" 
+               style="border-radius:20px;padding:5px 16px;font-weight:600;font-size:13px">
+                <i class="ti ti-building-community me-1"></i>Barangay Office <span class="badge {{ request('source') === 'barangay' ? 'bg-light text-dark' : 'bg-secondary' }} ms-1">{{ $counts['barangay'] ?? '' }}</span>
+            </a>
+            <a href="{{ route('portal.announcements', array_merge(request()->only('type'), ['source' => 'sk'])) }}" 
+               class="btn btn-sm {{ request('source') === 'sk' ? 'btn-warning text-dark' : 'btn-outline-secondary' }}" 
+               style="border-radius:20px;padding:5px 16px;font-weight:700;font-size:13px">
+                ⚡ Sangguniang Kabataan <span class="badge {{ request('source') === 'sk' ? 'bg-dark text-white' : 'bg-secondary' }} ms-1">{{ $counts['sk'] ?? '' }}</span>
+            </a>
         </div>
     </div>
 
@@ -21,9 +42,16 @@
                     </div>
                 @endif
                 <div class="p-3 d-flex flex-column flex-grow-1">
-                    <span class="badge align-self-start mb-2" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
-                        {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                    </span>
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                            {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                        </span>
+                        @if($ann->isSkAnnouncement())
+                            <span class="badge bg-warning text-dark fw-bold" style="font-size:10px;padding:3px 8px;border-radius:6px">
+                                ⚡ Sangguniang Kabataan (SK)
+                            </span>
+                        @endif
+                    </div>
                     <h5 class="fw-bold mb-2 text-dark" style="font-size:16px;line-height:1.35">{{ $ann->title }}</h5>
                     <p class="text-muted small mb-3 flex-grow-1" style="line-height:1.6;font-size:13px">{{ Str::limit($ann->body, 120) }}</p>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="font-size:12px;color:#94a3b8">
@@ -47,14 +75,25 @@
                     @endif
                     <div class="modal-header {{ $ann->image ? 'border-0 pb-0' : '' }}" style="padding: 24px 28px 12px;">
                         <div class="w-100">
-                            <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
-                                {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                                    {{ ucwords(str_replace('_',' ',$ann->announcement_type)) }}
+                                </span>
+                                @if($ann->isSkAnnouncement())
+                                    <span class="badge bg-warning text-dark fw-bold" style="font-size:11px;padding:3px 8px;border-radius:6px">
+                                        ⚡ Sangguniang Kabataan (SK)
+                                    </span>
+                                @endif
+                            </div>
                             <h4 class="modal-title fw-bold text-dark mt-2 mb-2" style="font-size:20px;line-height:1.35">
                                 {{ $ann->title }}
                             </h4>
-                            <div class="text-muted small d-flex align-items-center gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
+                            <div class="text-muted small d-flex align-items-center flex-wrap gap-2 pt-1 border-top" style="border-color:#f1f5f9 !important">
                                 <span><i class="ti ti-calendar me-1 text-primary"></i>Posted on {{ $ann->published_at ? $ann->published_at->format('F d, Y') : $ann->created_at->format('F d, Y') }}</span>
+                                @if($ann->isSkAnnouncement())
+                                    <span>•</span>
+                                    <span><i class="ti ti-bolt me-1 text-warning"></i>Posted by: <strong>Sangguniang Kabataan (SK)</strong></span>
+                                @endif
                             </div>
                         </div>
                         @if(!$ann->image)
