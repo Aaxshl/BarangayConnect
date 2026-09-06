@@ -9,7 +9,6 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ServiceLogController;
 use App\Http\Controllers\CitizenRequestController;
 use App\Http\Controllers\IssueMappingController;
-use App\Http\Controllers\QrVerificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\UserController;
@@ -32,6 +31,8 @@ Route::middleware('maintenance')->group(function () {
     Route::get('/portal', [ResidentPortalController::class, 'home'])->name('portal.index');
     Route::get('/portal/register', [ResidentPortalController::class, 'register'])->name('portal.register');
     Route::post('/portal/register', [ResidentPortalController::class, 'storeRegister']);
+    Route::get('/portal/about', [ResidentPortalController::class, 'about'])->name('portal.about');
+    Route::get('/portal/careers', [ResidentPortalController::class, 'careers'])->name('portal.careers');
     Route::get('/portal/login', [ResidentPortalController::class, 'login'])->name('portal.login');
     Route::post('/portal/login', [ResidentPortalController::class, 'doLogin']);
     Route::post('/portal/logout', [ResidentPortalController::class, 'logout'])->name('portal.logout');
@@ -90,10 +91,6 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     // Issue Mapping
     Route::get('/mapping', [IssueMappingController::class, 'index'])->name('mapping.index');
     Route::get('/mapping/data', [IssueMappingController::class, 'data'])->name('mapping.data');
-
-    // QR Verification
-    Route::get('/qr-verify', [QrVerificationController::class, 'index'])->name('qr.index');
-    Route::post('/qr-verify', [QrVerificationController::class, 'verify'])->name('qr.verify');
 
     // Reports (Viewable by Council, Export restricted to Staff)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

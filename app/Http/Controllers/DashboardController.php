@@ -202,26 +202,29 @@ class DashboardController extends Controller {
         $myLogsQuery = ServiceLog::where('assigned_to', $userId);
         $myRequestsQuery = CitizenRequest::where('assigned_to', $userId);
 
-        $completedThisMonth = (clone $myLogsQuery)->where('status', 'completed')
+        $completedThisMonth = (clone $myLogsQuery)->whereIn('status', ['resolved', 'closed'])
                                 ->whereMonth('updated_at', now()->month)
                                 ->whereYear('updated_at', now()->year)->count()
-                            + (clone $myRequestsQuery)->where('status', 'resolved')
+                            + (clone $myRequestsQuery)->whereIn('status', ['resolved', 'closed'])
                                 ->whereMonth('updated_at', now()->month)
                                 ->whereYear('updated_at', now()->year)->count();
 
+        $activeLogStatuses = ['pending', 'assigned', 'in_progress'];
+        $activeRequestStatuses = ['pending', 'under_review', 'assigned', 'in_progress'];
+
         return [
-            'my_active_logs'     => (clone $myLogsQuery)->whereIn('status', ['pending', 'in_progress'])->count(),
-            'my_active_requests' => (clone $myRequestsQuery)->whereIn('status', ['pending', 'under_review'])->count(),
+            'my_active_logs'     => (clone $myLogsQuery)->whereIn('status', $activeLogStatuses)->count(),
+            'my_active_requests' => (clone $myRequestsQuery)->whereIn('status', $activeRequestStatuses)->count(),
             'completed_month'    => $completedThisMonth,
             'assigned_logs'      => (clone $myLogsQuery)->with('resident')
-                                    ->whereIn('status', ['pending', 'in_progress'])
-                                    ->latest()->limit(6)->get(),
+                                    ->whereIn('status', $activeLogStatuses)
+                                    ->latest()->limit(10)->get(),
             'assigned_requests'  => (clone $myRequestsQuery)->with('resident')
-                                    ->whereIn('status', ['pending', 'under_review'])
-                                    ->latest()->limit(6)->get(),
+                                    ->whereIn('status', $activeRequestStatuses)
+                                    ->latest()->limit(10)->get(),
             'recent_completed'   => (clone $myLogsQuery)->with('resident')
-                                    ->where('status', 'completed')
-                                    ->latest('updated_at')->limit(4)->get(),
+                                    ->whereIn('status', ['resolved', 'closed'])
+                                    ->latest('updated_at')->limit(5)->get(),
         ];
     }
 

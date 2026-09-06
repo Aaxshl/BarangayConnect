@@ -49,7 +49,7 @@
     @endif
     @endif
 
-    @if(auth()->user()->canDo('nav.services') || auth()->user()->canDo('nav.requests') || auth()->user()->canDo('nav.mapping') || auth()->user()->canDo('nav.qr'))
+    @if(auth()->user()->canDo('nav.services') || auth()->user()->canDo('nav.requests') || auth()->user()->canDo('nav.mapping'))
     <div class="sidebar-section">Services</div>
     @if(auth()->user()->canDo('nav.services'))
     <a href="{{ route('admin.service-logs.index') }}" class="sidebar-item {{ request()->routeIs('admin.service-logs.*') ? 'active' : '' }}">
@@ -68,11 +68,6 @@
     @if(auth()->user()->canDo('nav.mapping'))
     <a href="{{ route('admin.mapping.index') }}" class="sidebar-item {{ request()->routeIs('admin.mapping.*') ? 'active' : '' }}">
         <i class="ti ti-map-pin"></i> Issue Mapping
-    </a>
-    @endif
-    @if(auth()->user()->canDo('nav.qr'))
-    <a href="{{ route('admin.qr.index') }}" class="sidebar-item {{ request()->routeIs('admin.qr.*') ? 'active' : '' }}">
-        <i class="ti ti-qrcode"></i> QR Verification
     </a>
     @endif
     @endif
@@ -186,8 +181,8 @@
                 </div>
             </div>
 
-            <div class="dropdown">
-                <div class="topbar-user dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="d-flex align-items-center ms-2 border-start ps-3">
+                <a href="{{ route('admin.profile.index') }}" class="d-flex align-items-center gap-2 text-decoration-none text-dark" title="My Profile">
                     <div class="user-avatar">{{ substr(auth()->user()->name,0,2) }}</div>
                     <div class="d-none d-md-block text-start">
                         <div class="fw-semibold lh-1" style="font-size:13px">{{ auth()->user()->name }}</div>
@@ -195,20 +190,7 @@
                             {{ auth()->user()->role_label }}
                         </span>
                     </div>
-                </div>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li class="px-3 py-1 d-md-none border-bottom">
-                        <div class="fw-bold">{{ auth()->user()->name }}</div>
-                        <div class="small text-muted">{{ auth()->user()->role_label }}</div>
-                    </li>
-                    <li><a class="dropdown-item" href="{{ route('admin.profile.index') }}"><i class="ti ti-user me-2"></i>Profile</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">@csrf
-                            <button type="submit" class="dropdown-item text-danger"><i class="ti ti-logout me-2"></i>Logout</button>
-                        </form>
-                    </li>
-                </ul>
+                </a>
             </div>
         </div>
     </header>

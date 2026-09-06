@@ -20,6 +20,15 @@ class CitizenRequestController extends Controller {
                 });
             });
 
+        if (auth()->user()->isStaff()) {
+            $query->where('assigned_to', auth()->id());
+            $activeCount   = CitizenRequest::where('assigned_to', auth()->id())->whereNotIn('status', ['resolved', 'closed'])->count();
+            $resolvedCount = CitizenRequest::where('assigned_to', auth()->id())->whereIn('status', ['resolved', 'closed'])->count();
+        } else {
+            $activeCount   = CitizenRequest::whereNotIn('status', ['resolved', 'closed'])->count();
+            $resolvedCount = CitizenRequest::whereIn('status', ['resolved', 'closed'])->count();
+        }
+
         if ($statusFilter) {
             $requests = (clone $query)->where('status', $statusFilter)->latest()->paginate(15)->withQueryString();
             $resolvedRequests = collect();
@@ -29,9 +38,6 @@ class CitizenRequestController extends Controller {
             $resolvedRequests = (clone $query)->whereIn('status', ['resolved', 'closed'])->latest()->get();
             $hasSplitView = true;
         }
-
-        $activeCount   = CitizenRequest::whereNotIn('status', ['resolved', 'closed'])->count();
-        $resolvedCount = CitizenRequest::whereIn('status', ['resolved', 'closed'])->count();
 
         $staff = User::where('status', 'active')->get();
         return view('admin.citizen-requests.index', compact('requests', 'resolvedRequests', 'hasSplitView', 'activeCount', 'resolvedCount', 'staff'));

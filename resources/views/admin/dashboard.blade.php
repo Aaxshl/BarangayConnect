@@ -105,28 +105,6 @@
     </div>
 </div>
 
-{{-- Captain Quick Actions --}}
-<div class="row g-2 mb-3">
-    <div class="col-12">
-        <div class="card-custom d-flex gap-2 flex-wrap">
-            @if(auth()->user()->canDo('residents.create_edit'))
-                <a href="{{ route('admin.residents.create') }}" class="btn btn-navy btn-sm"><i class="ti ti-user-plus me-1"></i>Add Resident</a>
-            @endif
-            @if(auth()->user()->canDo('documents.create'))
-                <a href="{{ route('admin.documents.create') }}" class="btn btn-navy btn-sm"><i class="ti ti-file-plus me-1"></i>Issue Document</a>
-            @endif
-            @if(auth()->user()->canDo('announcements.create'))
-                <a href="{{ route('admin.announcements.create') }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-speakerphone me-1"></i>New Announcement</a>
-            @endif
-            @if(auth()->user()->canDo('reports.view'))
-                <a href="{{ route('admin.reports.index') }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-chart-bar me-1"></i>Reports &amp; Analytics</a>
-            @endif
-            <a href="{{ route('admin.citizen-requests.index') }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-message-report me-1"></i>Citizen Requests</a>
-            <a href="{{ route('admin.service-logs.index') }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-clipboard-list me-1"></i>Blotter Records</a>
-        </div>
-    </div>
-</div>
-
 <div class="row g-3">
     {{-- Left: Recent Activity Feed --}}
     <div class="col-12 col-lg-5">
@@ -252,19 +230,6 @@
             <div class="stat-label"><i class="ti ti-database me-1 text-indigo"></i>Database Engine</div>
             <div class="stat-value" style="font-size:18px;margin-top:6px">{{ $db_driver }}</div>
             <div class="stat-sub">PHP {{ $php_version }}</div>
-        </div>
-    </div>
-</div>
-
-{{-- Admin Quick Actions --}}
-<div class="row g-2 mb-3">
-    <div class="col-12">
-        <div class="card-custom d-flex gap-2 flex-wrap">
-            <a href="{{ route('admin.users.index') }}" class="btn btn-navy btn-sm"><i class="ti ti-user-cog me-1"></i>Manage Users</a>
-            <a href="{{ route('admin.settings.index') }}" class="btn btn-navy btn-sm"><i class="ti ti-settings me-1"></i>Barangay Configuration</a>
-            <a href="{{ route('admin.settings.index') }}#permissions-pane" class="btn btn-outline-navy btn-sm"><i class="ti ti-shield-lock me-1"></i>Role Permissions Matrix</a>
-            <a href="{{ route('admin.settings.index') }}#demographics-pane" class="btn btn-outline-navy btn-sm"><i class="ti ti-chart-pie me-1"></i>Age Brackets Configuration</a>
-            <a href="{{ route('admin.reports.index') }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-archive me-1"></i>Export Hub &amp; Backups</a>
         </div>
     </div>
 </div>
@@ -398,17 +363,7 @@
     </div>
 </div>
 
-{{-- Secretary Quick Actions --}}
-<div class="row g-2 mb-3">
-    <div class="col-12">
-        <div class="card-custom d-flex gap-2 flex-wrap">
-            <a href="{{ route('admin.documents.create') }}" class="btn btn-navy btn-sm"><i class="ti ti-file-plus me-1"></i>Issue New Document</a>
-            <a href="{{ route('admin.documents.index') }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-file-certificate me-1"></i>View All Documents</a>
-            <a href="{{ route('admin.citizen-requests.index') }}" class="btn btn-outline-navy btn-sm"><i class="ti ti-message-report me-1"></i>Manage Requests</a>
-            <a href="{{ route('admin.announcements.create') }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-speakerphone me-1"></i>Draft Announcement</a>
-        </div>
-    </div>
-</div>
+
 
 <div class="row g-3">
     {{-- Left: Document Requests Needing Action --}}

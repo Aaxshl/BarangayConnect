@@ -9,6 +9,47 @@
 </div>
 
 <div class="container-fluid px-3 px-md-4 mt-4">
+    {{-- Community Portal Quick Info Cards --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <a href="{{ route('portal.about') }}" class="text-decoration-none">
+                <div class="p-3 bg-white border rounded-3 d-flex align-items-center justify-content-between shadow-sm" style="transition:transform 0.15s,box-shadow 0.15s;cursor:pointer">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:46px;height:46px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:22px">
+                            <i class="ti ti-info-circle"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark" style="font-size:15px">Who We Are</div>
+                            <div class="text-muted small">Barangay Council, leadership &amp; mission</div>
+                        </div>
+                    </div>
+                    <div class="text-primary fw-bold" style="font-size:13px">
+                        View Details &rarr;
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <a href="{{ route('portal.careers') }}" class="text-decoration-none">
+                <div class="p-3 bg-white border rounded-3 d-flex align-items-center justify-content-between shadow-sm" style="transition:transform 0.15s,box-shadow 0.15s;cursor:pointer">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:46px;height:46px;border-radius:12px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:22px">
+                            <i class="ti ti-briefcase"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark" style="font-size:15px">Careers &amp; Opportunities</div>
+                            <div class="text-muted small">Job openings &amp; community volunteer programs</div>
+                        </div>
+                    </div>
+                    <div class="text-success fw-bold" style="font-size:13px">
+                        View Openings &rarr;
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <div class="row g-4">
         {{-- Recent Requests Column --}}
         <div class="col-12 col-md-6">
@@ -41,7 +82,7 @@
                     </div>
                 </div>
                 @empty
-                <p class="text-muted small text-center py-4 mb-0">No requests yet. Use the Request Document or Report Issue buttons in the navbar.</p>
+                <p class="text-muted small text-center py-4 mb-0">No requests submitted yet.</p>
                 @endforelse
                 @endforelse
             </div>

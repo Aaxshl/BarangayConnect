@@ -215,6 +215,12 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('portal.about') }}" class="btn btn-sm btn-link text-decoration-none text-dark fw-semibold d-none d-md-inline-block" style="font-size:13px">
+                    <i class="ti ti-info-circle me-1"></i>Who We Are
+                </a>
+                <a href="{{ route('portal.careers') }}" class="btn btn-sm btn-link text-decoration-none text-dark fw-semibold d-none d-md-inline-block" style="font-size:13px">
+                    <i class="ti ti-briefcase me-1"></i>Careers
+                </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1.5" style="border-radius:8px;font-size:13px">
                     <i class="ti ti-login me-1"></i>Sign In
                 </a>
@@ -226,7 +232,7 @@
     </div>
 </nav>
 
-<!-- Hero (No Get Started / Sign In Buttons) -->
+<!-- Hero with Quick Action Links -->
 <div class="portal-hero">
     <div class="hero-location-badge">
         <i class="ti ti-map-pin" style="font-size:14px"></i>
@@ -388,68 +394,80 @@
         <div class="row g-3 justify-content-center">
             <!-- 1. Barangay Clearance -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact">
-                        <i class="ti ti-file-certificate"></i>
+                <a href="{{ route('portal.request') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact">
+                            <i class="ti ti-file-certificate"></i>
+                        </div>
+                        <div class="service-title-compact">Barangay Clearance</div>
+                        <div class="service-desc-compact">For jobs, postal, ID & official use</div>
                     </div>
-                    <div class="service-title-compact">Barangay Clearance</div>
-                    <div class="service-desc-compact">For jobs, postal, ID & official use</div>
-                </div>
+                </a>
             </div>
 
             <!-- 2. Certificate of Residency -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact">
-                        <i class="ti ti-home-check"></i>
+                <a href="{{ route('portal.request') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact">
+                            <i class="ti ti-home-check"></i>
+                        </div>
+                        <div class="service-title-compact">Residency Cert.</div>
+                        <div class="service-desc-compact">Proof of address & residency</div>
                     </div>
-                    <div class="service-title-compact">Residency Cert.</div>
-                    <div class="service-desc-compact">Proof of address & residency</div>
-                </div>
+                </a>
             </div>
 
             <!-- 3. Certificate of Indigency -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact">
-                        <i class="ti ti-heart-handshake"></i>
+                <a href="{{ route('portal.request') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact">
+                            <i class="ti ti-heart-handshake"></i>
+                        </div>
+                        <div class="service-title-compact">Cert. of Indigency</div>
+                        <div class="service-desc-compact">For medical & scholarship aid</div>
                     </div>
-                    <div class="service-title-compact">Cert. of Indigency</div>
-                    <div class="service-desc-compact">For medical & scholarship aid</div>
-                </div>
+                </a>
             </div>
 
             <!-- 4. Report Community Issue -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact" style="background:#fee2e2;color:#dc2626">
-                        <i class="ti ti-message-report"></i>
+                <a href="{{ route('portal.report') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact" style="background:#fee2e2;color:#dc2626">
+                            <i class="ti ti-message-report"></i>
+                        </div>
+                        <div class="service-title-compact">Incident Report</div>
+                        <div class="service-desc-compact">Report damage, lights & waste</div>
                     </div>
-                    <div class="service-title-compact">Incident Report</div>
-                    <div class="service-desc-compact">Report damage, lights & waste</div>
-                </div>
+                </a>
             </div>
 
             <!-- 5. Track Status -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact" style="background:#ecfdf5;color:#059669">
-                        <i class="ti ti-list-search"></i>
+                <a href="{{ route('portal.track') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact" style="background:#ecfdf5;color:#059669">
+                            <i class="ti ti-list-search"></i>
+                        </div>
+                        <div class="service-title-compact">Track Request</div>
+                        <div class="service-desc-compact">Real-time status tracking</div>
                     </div>
-                    <div class="service-title-compact">Track Request</div>
-                    <div class="service-desc-compact">Real-time status tracking</div>
-                </div>
+                </a>
             </div>
 
-            <!-- 6. Digital QR Verification -->
+            <!-- 6. Who We Are & Officials -->
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="service-card-compact">
-                    <div class="service-icon-compact" style="background:#f5f3ff;color:#7c3aed">
-                        <i class="ti ti-qrcode"></i>
+                <a href="{{ route('portal.about') }}" class="text-decoration-none">
+                    <div class="service-card-compact">
+                        <div class="service-icon-compact" style="background:#f5f3ff;color:#7c3aed">
+                            <i class="ti ti-info-circle"></i>
+                        </div>
+                        <div class="service-title-compact">Who We Are</div>
+                        <div class="service-desc-compact">Council &amp; Officers directory</div>
                     </div>
-                    <div class="service-title-compact">QR Verification</div>
-                    <div class="service-desc-compact">Official resident ID check</div>
-                </div>
+                </a>
             </div>
         </div>
     </div>

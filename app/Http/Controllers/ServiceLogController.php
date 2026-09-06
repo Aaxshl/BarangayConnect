@@ -19,6 +19,10 @@ class ServiceLogController extends Controller {
         $query->when($request->type, fn($q, $t) => $q->where('service_type', $t));
         $query->when($request->status, fn($q, $s) => $q->where('status', $s));
 
+        if (auth()->user()->isStaff()) {
+            $query->where('assigned_to', auth()->id());
+        }
+
         if ($request->status) {
             $logs = $query->latest('date_of_service')->paginate(15)->withQueryString();
             $completedLogs = collect();

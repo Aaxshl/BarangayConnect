@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{Resident, CitizenRequest, Document, Announcement, Setting, Household};
+use App\Models\{Resident, CitizenRequest, Document, Announcement, Setting, Household, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -10,6 +10,15 @@ class ResidentPortalController extends Controller {
         $announcements = Announcement::published()->latest('published_at')->get();
         $settings = Setting::all()->pluck('value','key')->toArray();
         return view('resident.home', compact('announcements', 'settings'));
+    }
+    public function about() {
+        $settings = Setting::all()->pluck('value','key')->toArray();
+        $councilors = User::whereIn('role', ['captain', 'secretary', 'councilor'])->where('status', 'active')->get();
+        return view('resident.about', compact('settings', 'councilors'));
+    }
+    public function careers() {
+        $settings = Setting::all()->pluck('value','key')->toArray();
+        return view('resident.careers', compact('settings'));
     }
     public function login() { 
         return redirect()->route('login'); 

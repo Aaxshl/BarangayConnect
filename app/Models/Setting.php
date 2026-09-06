@@ -22,7 +22,6 @@ class Setting extends Model {
             'nav.services'      => 'View Service Logs Menu',
             'nav.requests'      => 'View Citizen Requests Menu',
             'nav.mapping'       => 'View Issue Mapping Menu',
-            'nav.qr'            => 'View QR Verification Menu',
             'nav.reports'       => 'View Reports Menu',
             'nav.announcements' => 'View Announcements Menu',
         ],
@@ -66,7 +65,7 @@ class Setting extends Model {
         'secretary' => [
             'nav.residents' => true, 'nav.households' => true, 'nav.documents' => true,
             'nav.services' => true, 'nav.requests' => true, 'nav.mapping' => true,
-            'nav.qr' => true, 'nav.reports' => true, 'nav.announcements' => true,
+            'nav.reports' => true, 'nav.announcements' => true,
             'residents.create_edit' => true, 'residents.delete' => false,
             'documents.create' => true, 'documents.process' => true, 'documents.release' => true,
             'documents.reject' => true, 'documents.print' => true, 'documents.templates' => true,
@@ -78,7 +77,7 @@ class Setting extends Model {
         'councilor' => [
             'nav.residents' => true, 'nav.households' => true, 'nav.documents' => true,
             'nav.services' => true, 'nav.requests' => true, 'nav.mapping' => true,
-            'nav.qr' => true, 'nav.reports' => true, 'nav.announcements' => true,
+            'nav.reports' => true, 'nav.announcements' => true,
             'residents.create_edit' => false, 'residents.delete' => false,
             'documents.create' => false, 'documents.process' => false, 'documents.release' => false,
             'documents.reject' => false, 'documents.print' => false, 'documents.templates' => false,
@@ -90,7 +89,7 @@ class Setting extends Model {
         'staff' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
             'nav.services' => true, 'nav.requests' => true, 'nav.mapping' => true,
-            'nav.qr' => true, 'nav.reports' => false, 'nav.announcements' => true,
+            'nav.reports' => false, 'nav.announcements' => true,
             'residents.create_edit' => false, 'residents.delete' => false,
             'documents.create' => false, 'documents.process' => false, 'documents.release' => false,
             'documents.reject' => false, 'documents.print' => false, 'documents.templates' => false,
@@ -102,7 +101,7 @@ class Setting extends Model {
         'sk_chairman' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
             'nav.services' => false, 'nav.requests' => false, 'nav.mapping' => false,
-            'nav.qr' => false, 'nav.reports' => false, 'nav.announcements' => true,
+            'nav.reports' => false, 'nav.announcements' => true,
             'residents.create_edit' => false, 'residents.delete' => false,
             'documents.create' => false, 'documents.process' => false, 'documents.release' => false,
             'documents.reject' => false, 'documents.print' => false, 'documents.templates' => false,
@@ -114,7 +113,7 @@ class Setting extends Model {
         'sk_councilor' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
             'nav.services' => false, 'nav.requests' => false, 'nav.mapping' => false,
-            'nav.qr' => false, 'nav.reports' => false, 'nav.announcements' => true,
+            'nav.reports' => false, 'nav.announcements' => true,
             'residents.create_edit' => false, 'residents.delete' => false,
             'documents.create' => false, 'documents.process' => false, 'documents.release' => false,
             'documents.reject' => false, 'documents.print' => false, 'documents.templates' => false,
