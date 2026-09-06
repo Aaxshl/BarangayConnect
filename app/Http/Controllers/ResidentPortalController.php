@@ -17,8 +17,7 @@ class ResidentPortalController extends Controller {
         return view('resident.about', compact('settings', 'councilors'));
     }
     public function careers() {
-        $settings = Setting::all()->pluck('value','key')->toArray();
-        return view('resident.careers', compact('settings'));
+        return redirect()->route('portal.announcements', ['tab' => 'careers']);
     }
     public function login() { 
         return redirect()->route('login'); 
@@ -72,7 +71,12 @@ class ResidentPortalController extends Controller {
     }
     public function dashboard() {
         $resident = $this->getResident();
-        $myRequests  = CitizenRequest::where('resident_id',$resident->id)->latest()->limit(5)->get();
+        $myRequests  = CitizenRequest::where('resident_id',$resident->id)
+            ->with('assignedTo')
+            ->withCount(['comments' => fn($q) => $q->where('is_internal', false)])
+            ->latest()
+            ->limit(5)
+            ->get();
         $myDocuments = Document::where('resident_id',$resident->id)->latest()->limit(5)->get();
         $announcements = Announcement::published()->latest('published_at')->limit(3)->get();
         return view('resident.dashboard', compact('resident','myRequests','myDocuments','announcements'));
@@ -109,6 +113,7 @@ class ResidentPortalController extends Controller {
             'location'     => 'required|string',
             'latitude'     => 'nullable|numeric',
             'longitude'    => 'nullable|numeric',
+            'priority'     => 'nullable|in:low,medium,high,urgent',
         ]);
         $resident = $this->getResident();
         $tracking = CitizenRequest::generateTracking();
@@ -118,6 +123,7 @@ class ResidentPortalController extends Controller {
         CitizenRequest::create(array_merge($validated,[
             'tracking_number' => $tracking,
             'resident_id'     => $resident->id,
+            'priority'        => $request->input('priority', 'medium'),
             'status'          => 'pending',
         ]));
         return redirect()->route('portal.track.detail',$tracking)
@@ -144,12 +150,18 @@ class ResidentPortalController extends Controller {
         $activeReportStatuses = ['pending', 'under_review', 'assigned', 'in_progress'];
         $completedReportStatuses = ['resolved', 'closed', 'rejected', 'cancelled'];
 
-        $activeReports = CitizenRequest::with('assignedTo')->where('resident_id', $resident->id)
+        $activeReports = CitizenRequest::with([
+            'assignedTo',
+            'comments' => fn($q) => $q->where('is_internal', false)->with(['user', 'resident'])->oldest(),
+        ])->where('resident_id', $resident->id)
             ->whereIn('status', $activeReportStatuses)
             ->latest()
             ->get();
 
-        $completedReports = CitizenRequest::with('assignedTo')->where('resident_id', $resident->id)
+        $completedReports = CitizenRequest::with([
+            'assignedTo',
+            'comments' => fn($q) => $q->where('is_internal', false)->with(['user', 'resident'])->oldest(),
+        ])->where('resident_id', $resident->id)
             ->whereIn('status', $completedReportStatuses)
             ->latest()
             ->get();
@@ -169,12 +181,77 @@ class ResidentPortalController extends Controller {
     }
     public function trackDetail($tracking) {
         $resident = $this->getResident();
-        $item = CitizenRequest::where('tracking_number',$tracking)
-                    ->where('resident_id',$resident->id)->first()
-              ?? Document::where('document_number',$tracking)
-                    ->where('resident_id',$resident->id)->first();
+        $cleanTracking = trim($tracking);
+        $item = CitizenRequest::where(function($q) use ($cleanTracking) {
+                        $q->where('tracking_number', $cleanTracking)
+                          ->orWhere('tracking_number', strtoupper($cleanTracking));
+                    })
+                    ->where('resident_id', $resident->id)
+                    ->with(['comments' => function($q) {
+                        $q->where('is_internal', false)->with(['user', 'resident'])->oldest();
+                    }, 'assignedTo'])
+                    ->first()
+              ?? Document::where(function($q) use ($cleanTracking) {
+                        $q->where('document_number', $cleanTracking)
+                          ->orWhere('document_number', strtoupper($cleanTracking));
+                    })
+                    ->where('resident_id', $resident->id)
+                    ->with('issuedBy')
+                    ->first();
         abort_unless($item, 404);
         return view('resident.track-detail', compact('item','tracking'));
+    }
+    public function storeComment(Request $request, $tracking) {
+        $resident = $this->getResident();
+        $cleanTracking = trim($tracking);
+        $citizenRequest = CitizenRequest::where(function($q) use ($cleanTracking) {
+                $q->where('tracking_number', $cleanTracking)
+                  ->orWhere('tracking_number', strtoupper($cleanTracking));
+            })
+            ->where('resident_id', $resident->id)
+            ->firstOrFail();
+
+        $request->validate([
+            'message'    => 'required|string|max:3000',
+            'attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:5120',
+        ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('comment-attachments', 'public');
+        }
+
+        $comment = $citizenRequest->comments()->create([
+            'resident_id' => $resident->id,
+            'sender_type' => 'resident',
+            'message'     => $request->message,
+            'attachment'  => $attachmentPath,
+            'is_internal' => false,
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Your message has been sent to the Barangay Office.',
+                'request_id' => $citizenRequest->id,
+                'comments_count' => $citizenRequest->comments()->where('is_internal', false)->count(),
+                'comment' => [
+                    'id' => $comment->id,
+                    'message' => $comment->message,
+                    'attachment_url' => $comment->attachment ? asset('storage/'.$comment->attachment) : null,
+                    'created_at_human' => 'Just now',
+                ],
+            ]);
+        }
+
+        $prev = url()->previous();
+        if (str_contains($prev, '/portal/track') && !str_contains($prev, '/portal/track/')) {
+            return redirect($prev . '#repModal-' . $citizenRequest->id)
+                ->with('open_modal', 'repModal-' . $citizenRequest->id)
+                ->with('success', 'Your message has been sent to the Barangay Office.');
+        }
+
+        return back()->with('success', 'Your message has been sent to the Barangay Office.');
     }
     public function announcements(Request $request) {
         $query = Announcement::published();
@@ -197,7 +274,9 @@ class ResidentPortalController extends Controller {
             'sk'       => Announcement::published()->sk()->count(),
         ];
 
-        return view('resident.announcements', compact('announcements', 'counts'));
+        $settings = Setting::all()->pluck('value','key')->toArray();
+
+        return view('resident.announcements', compact('announcements', 'counts', 'settings'));
     }
     public function profile() {
         $resident = $this->getResident();

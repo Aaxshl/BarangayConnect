@@ -1,17 +1,21 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\{CitizenRequest, ServiceLog, User};
+use App\Models\{CitizenRequest, CitizenRequestComment, ServiceLog, User};
 use Illuminate\Http\Request;
 
 class CitizenRequestController extends Controller {
     public function index(Request $request) {
-        $statusFilter = $request->query('status');
-        $typeFilter   = $request->query('type');
-        $searchFilter = $request->query('search');
+        $statusFilter   = $request->query('status');
+        $typeFilter     = $request->query('type');
+        $priorityFilter = $request->query('priority');
+        $agingFilter    = $request->query('aging');
+        $searchFilter   = $request->query('search');
 
         $query = CitizenRequest::with('resident', 'assignedTo')
+            ->withCount('comments')
             ->when($typeFilter, fn($q, $t) => $q->where('request_type', $t))
+            ->when($priorityFilter, fn($q, $p) => $q->where('priority', $p))
             ->when($searchFilter, function ($q, $s) {
                 $q->where(function($sub) use ($s) {
                     $sub->where('tracking_number', 'like', "%{$s}%")
@@ -19,6 +23,15 @@ class CitizenRequestController extends Controller {
                         ->orWhere('description', 'like', "%{$s}%");
                 });
             });
+
+        // Aging filters: normal (<=2d), warning (3-5d), overdue (6+d)
+        if ($agingFilter === 'overdue') {
+            $query->where('created_at', '<=', now()->subDays(6));
+        } elseif ($agingFilter === 'warning') {
+            $query->whereBetween('created_at', [now()->subDays(5)->startOfDay(), now()->subDays(3)->endOfDay()]);
+        } elseif ($agingFilter === 'normal') {
+            $query->where('created_at', '>=', now()->subDays(2)->startOfDay());
+        }
 
         if (auth()->user()->isStaff()) {
             $query->where('assigned_to', auth()->id());
@@ -44,7 +57,16 @@ class CitizenRequestController extends Controller {
     }
 
     public function show(CitizenRequest $citizenRequest) {
-        $citizenRequest->load('resident','assignedTo');
+        $citizenRequest->load(['resident', 'assignedTo']);
+
+        // Strictly isolate conversation: Only the assigned personnel can view comments
+        if ($citizenRequest->canAccessConversation(auth()->user())) {
+            $citizenRequest->load(['comments' => function($q) {
+                $q->with(['user', 'resident'])->oldest();
+            }]);
+        } else {
+            $citizenRequest->setRelation('comments', collect());
+        }
 
         // Automatically transition 'pending' -> 'under_review' when admin views it
         if ($citizenRequest->status === 'pending') {
@@ -86,6 +108,11 @@ class CitizenRequestController extends Controller {
             return back()->with('error', 'Please assign a personnel first before starting the investigation / work.');
         }
 
+        // ENFORCE: Only the assigned personnel can start the investigation/service
+        if ($request->status === 'in_progress' && $citizenRequest->assigned_to && auth()->id() !== (int)$citizenRequest->assigned_to) {
+            return back()->with('error', 'Unauthorized. Only the assigned personnel (' . optional($citizenRequest->assignedTo)->name . ') can start this service.');
+        }
+
         $data = [
             'status' => $request->status,
         ];
@@ -107,6 +134,37 @@ class CitizenRequestController extends Controller {
         $citizenRequest->update($data);
 
         return back()->with('success', 'Status updated to "' . ucwords(str_replace('_',' ',$request->status)) . '".');
+    }
+
+    /**
+     * Official posts a comment / response in the case discussion thread.
+     */
+    public function storeComment(Request $request, CitizenRequest $citizenRequest) {
+        // ENFORCE: Only the assigned personnel can participate in this case's conversation
+        if (!$citizenRequest->canAccessConversation(auth()->user())) {
+            return back()->with('error', 'Unauthorized. Only the personnel assigned to this case can view and send messages in this conversation.');
+        }
+
+        $request->validate([
+            'message'     => 'required|string|max:3000',
+            'attachment'  => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:5120',
+            'is_internal' => 'nullable|boolean',
+        ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('comments', 'public');
+        }
+
+        $citizenRequest->comments()->create([
+            'user_id'     => auth()->id(),
+            'sender_type' => 'official',
+            'message'     => $request->message,
+            'attachment'  => $attachmentPath,
+            'is_internal' => $request->boolean('is_internal'),
+        ]);
+
+        return back()->with('success', 'Message posted to the case discussion thread.');
     }
 
     public function convertToServiceLog(CitizenRequest $citizenRequest) {

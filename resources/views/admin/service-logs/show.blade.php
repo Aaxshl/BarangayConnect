@@ -181,13 +181,19 @@
                     {{-- Assigned: Start button or Reassign --}}
                     @if($serviceLog->status === 'assigned')
                         @if(auth()->user()->canDo('services.status'))
-                        <form method="POST" action="{{ route('admin.service-logs.status', $serviceLog) }}">
-                            @csrf
-                            <input type="hidden" name="action" value="start">
-                            <button type="submit" class="btn btn-success">
-                                <i class="ti ti-activity me-1"></i> Start Service / Ongoing
-                            </button>
-                        </form>
+                            @if(auth()->id() === (int)$serviceLog->assigned_to)
+                            <form method="POST" action="{{ route('admin.service-logs.status', $serviceLog) }}">
+                                @csrf
+                                <input type="hidden" name="action" value="start">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="ti ti-activity me-1"></i> Start Service / Ongoing
+                                </button>
+                            </form>
+                            @else
+                            <div class="alert alert-secondary py-1 px-3 mb-0 small text-center">
+                                <i class="ti ti-lock me-1"></i>Only the assigned officer (<strong>{{ optional($serviceLog->assignedTo)->name }}</strong>) can start this service.
+                            </div>
+                            @endif
                         @endif
                         @if(auth()->user()->canDo('services.assign'))
                         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#assignModal">

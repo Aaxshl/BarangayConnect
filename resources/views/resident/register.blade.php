@@ -86,7 +86,7 @@
 <div class="register-container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{{ route('portal.home') }}" style="color:var(--brand-navy);font-size:13.5px;text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:500">
-            <i class="ti ti-arrow-left"></i> Back to Portal
+            <i class="ti ti-arrow-left"></i> Back
         </a>
         <span class="small text-muted">{{ $settings['barangay_name'] ?? 'Barangay San Jose' }}</span>
     </div>

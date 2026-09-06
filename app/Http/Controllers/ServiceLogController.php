@@ -137,6 +137,9 @@ class ServiceLogController extends Controller {
                 if (!in_array($serviceLog->status, ['pending', 'assigned'])) {
                     return back()->with('error', 'Cannot start service in the current state.');
                 }
+                if ($serviceLog->assigned_to && auth()->id() !== (int)$serviceLog->assigned_to) {
+                    return back()->with('error', 'Unauthorized. Only the assigned personnel (' . optional($serviceLog->assignedTo)->name . ') can start this service.');
+                }
                 $serviceLog->update(['status' => 'in_progress']);
                 return back()->with('success', 'Service action is now In Progress.');
 

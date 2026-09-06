@@ -29,10 +29,14 @@
     <a href="{{ route('admin.citizen-requests.index') }}" class="btn btn-outline-secondary btn-sm">
         <i class="ti ti-arrow-left me-1"></i> Back to Citizen Reports
     </a>
-    <span class="status-pill status-pill-{{ $citizenRequest->status }}">
-        <i class="ti ti-circle-filled" style="font-size:8px"></i>
-        {{ ucwords(str_replace('_',' ',$citizenRequest->status)) }}
-    </span>
+    <div class="d-flex align-items-center gap-2">
+        {!! $citizenRequest->priority_badge !!}
+        {!! $citizenRequest->aging_badge !!}
+        <span class="status-pill status-pill-{{ $citizenRequest->status }}">
+            <i class="ti ti-circle-filled" style="font-size:8px"></i>
+            {{ ucwords(str_replace('_',' ',$citizenRequest->status)) }}
+        </span>
+    </div>
 </div>
 
 <div class="row g-3">
@@ -160,6 +164,111 @@
                 @endif
             </div>
         </div>
+
+        {{-- Interactive Discussion & Activity Thread (Restricted to Assigned Personnel & Reporting Resident) --}}
+        @if($citizenRequest->canAccessConversation(auth()->user()))
+        <div class="card-custom mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">
+                    <i class="ti ti-messages me-2 text-primary"></i>Case Communication &amp; Updates
+                    <span class="badge bg-secondary ms-1">{{ $citizenRequest->comments->count() }}</span>
+                </h6>
+                <span class="small text-muted">Direct messaging with resident &amp; internal logs</span>
+            </div>
+
+            {{-- Timeline / Comments List --}}
+            <div class="comments-thread mb-3" style="max-height: 480px; overflow-y: auto; padding-right: 4px;">
+                @forelse($citizenRequest->comments as $comment)
+                    <div class="p-3 mb-2 rounded border {{ $comment->is_internal ? 'border-warning bg-warning bg-opacity-10' : ($comment->sender_type === 'resident' ? 'border-info bg-info bg-opacity-10' : 'border-light bg-light') }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="small" style="color: #1e293b;">
+                                    @if($comment->sender_type === 'resident')
+                                        <i class="ti ti-user text-info me-1"></i>{{ optional($comment->resident)->full_name ?? 'Resident' }}
+                                    @else
+                                        <i class="ti ti-shield text-primary me-1"></i>{{ optional($comment->user)->name ?? 'Barangay Official' }}
+                                    @endif
+                                </strong>
+                                @if($comment->sender_type === 'resident')
+                                    <span class="badge bg-info text-dark" style="font-size: 10px;">Resident</span>
+                                @else
+                                    <span class="badge bg-primary" style="font-size: 10px;">Staff</span>
+                                @endif
+                                @if($comment->is_internal)
+                                    <span class="badge bg-warning text-dark" style="font-size: 10px;">
+                                        <i class="ti ti-lock me-1"></i>Internal Note (Hidden from Resident)
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="text-muted" style="font-size: 11px;" title="{{ $comment->created_at->format('M d, Y g:i A') }}">
+                                <i class="ti ti-clock me-1"></i>{{ $comment->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                        <div style="font-size: 13.5px; line-height: 1.5; color: #334155; white-space: pre-wrap;">{{ $comment->message }}</div>
+                        @if($comment->attachment)
+                            <div class="mt-2 pt-2 border-top border-secondary border-opacity-25 small">
+                                <a href="{{ asset('storage/'.$comment->attachment) }}" target="_blank" class="text-decoration-none fw-semibold">
+                                    <i class="ti ti-paperclip me-1"></i>View Attachment
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="text-center py-4 text-muted border rounded bg-light">
+                        <i class="ti ti-message-off mb-2 d-block" style="font-size: 28px; opacity: 0.5;"></i>
+                        No communication or notes posted yet. Submit an update below.
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- New Comment Form --}}
+            <form method="POST" action="{{ route('admin.citizen-requests.comment', $citizenRequest) }}" enctype="multipart/form-data" class="pt-2 border-top">
+                @csrf
+                <div class="mb-2">
+                    <label class="form-label fw-semibold small mb-1">Post an Update / Message</label>
+                    <textarea name="message" class="form-control form-control-sm" rows="3" placeholder="Type your response to the resident, or record an internal investigation note..." required></textarea>
+                </div>
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-6">
+                        <input type="file" name="attachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        <div class="form-text" style="font-size: 11px;">Attach photo or document (max 5MB, optional)</div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center justify-content-between justify-content-md-end gap-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_internal" value="1" id="internalNoteCheck">
+                            <label class="form-check-label small" for="internalNoteCheck">
+                                <i class="ti ti-lock me-1"></i>Internal note
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-sm">
+                            <i class="ti ti-send me-1"></i>Post
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        @else
+        {{-- Restricted Notice for Staff Not Assigned to This Case --}}
+        <div class="card-custom mb-3 border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0 text-muted">
+                    <i class="ti ti-lock me-2 text-warning"></i>Case Communication (Confidential)
+                </h6>
+                <span class="badge bg-secondary-subtle text-secondary border">Restricted</span>
+            </div>
+            <div class="p-4 bg-light rounded border text-center">
+                <i class="ti ti-shield-lock text-muted mb-2 d-block" style="font-size:32px;"></i>
+                <div class="fw-semibold text-dark mb-1" style="font-size:14px;">Conversation is Private to This Case</div>
+                <p class="text-muted small mb-0" style="max-width:480px;margin:0 auto;line-height:1.5;">
+                    @if($citizenRequest->assigned_to)
+                        This case conversation is confidential between the reporting resident and the assigned personnel (<strong>{{ optional($citizenRequest->assignedTo)->name }}</strong>). Personnel assigned to other cases or unassigned staff cannot view or send messages.
+                    @else
+                        This case conversation is confidential between the reporting resident and the assigned personnel. No officer is currently assigned to this case. Once an officer is assigned, case communication will be unlocked for them.
+                    @endif
+                </p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Right Column: Progressive Workflow Actions & Assignment -->
@@ -183,13 +292,19 @@
                     <i class="ti ti-user-check me-1"></i>Assigned to <strong>{{ optional($citizenRequest->assignedTo)->name }}</strong>. Ready to begin work.
                 </div>
                 @if(auth()->user()->canDo('requests.status'))
-                <form method="POST" action="{{ route('admin.citizen-requests.status', $citizenRequest) }}" class="mb-2">
-                    @csrf
-                    <input type="hidden" name="status" value="in_progress">
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        <i class="ti ti-player-play me-1"></i>Start Investigation / In Progress
-                    </button>
-                </form>
+                    @if(auth()->id() === (int)$citizenRequest->assigned_to)
+                    <form method="POST" action="{{ route('admin.citizen-requests.status', $citizenRequest) }}" class="mb-2">
+                        @csrf
+                        <input type="hidden" name="status" value="in_progress">
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="ti ti-player-play me-1"></i>Start Investigation / In Progress
+                        </button>
+                    </form>
+                    @else
+                    <div class="alert alert-secondary py-2 mb-2 small text-center">
+                        <i class="ti ti-lock me-1"></i>Only the assigned personnel (<strong>{{ optional($citizenRequest->assignedTo)->name }}</strong>) can start this investigation.
+                    </div>
+                    @endif
                 @endif
 
             @elseif($citizenRequest->status === 'in_progress')

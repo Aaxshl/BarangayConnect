@@ -20,6 +20,8 @@ assert(!class_exists('App\Http\Controllers\QrVerificationController'), "QrVerifi
 echo "✓ QR verification completely removed from routes and controllers.\n";
 
 // 2. Verify admin layout has no topbar logout button and no QR link
+$adminUser = User::where('role', 'administrator')->first() ?? User::first();
+Auth::login($adminUser);
 $adminHtml = view('layouts.admin')->render();
 assert(strpos($adminHtml, 'admin.qr.index') === false, "No QR link in admin layout");
 // In topbar (header), there should NOT be a logout button

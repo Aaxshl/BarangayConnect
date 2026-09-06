@@ -216,10 +216,7 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <a href="{{ route('portal.about') }}" class="btn btn-sm btn-link text-decoration-none text-dark fw-semibold d-none d-md-inline-block" style="font-size:13px">
-                    <i class="ti ti-info-circle me-1"></i>Who We Are
-                </a>
-                <a href="{{ route('portal.careers') }}" class="btn btn-sm btn-link text-decoration-none text-dark fw-semibold d-none d-md-inline-block" style="font-size:13px">
-                    <i class="ti ti-briefcase me-1"></i>Careers
+                    <i class="ti ti-info-circle me-1"></i>About
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1.5" style="border-radius:8px;font-size:13px">
                     <i class="ti ti-login me-1"></i>Sign In
@@ -457,14 +454,14 @@
                 </a>
             </div>
 
-            <!-- 6. Who We Are & Officials -->
+            <!-- 6. About & Officials -->
             <div class="col-6 col-md-4 col-lg-2">
                 <a href="{{ route('portal.about') }}" class="text-decoration-none">
                     <div class="service-card-compact">
                         <div class="service-icon-compact" style="background:#f5f3ff;color:#7c3aed">
                             <i class="ti ti-info-circle"></i>
                         </div>
-                        <div class="service-title-compact">Who We Are</div>
+                        <div class="service-title-compact">About Us</div>
                         <div class="service-desc-compact">Council &amp; Officers directory</div>
                     </div>
                 </a>

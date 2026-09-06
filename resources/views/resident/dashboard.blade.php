@@ -59,28 +59,49 @@
             </div>
             <div class="portal-card">
                 @forelse($myRequests as $req)
-                <div class="request-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="request-id">{{ $req->tracking_number }}</div>
-                            <div class="request-title">{{ ucwords(str_replace('_',' ',$req->request_type)) }}</div>
-                            <div class="request-meta">{{ $req->created_at->format('M d, Y') }}</div>
+                <a href="{{ route('portal.track.detail', $req->tracking_number) }}" class="text-decoration-none d-block mb-2 text-dark">
+                    <div class="request-item p-3 rounded border hover-shadow" style="background:#fff;transition:transform 0.15s,box-shadow 0.15s">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div>
+                                <div class="request-id fw-bold text-primary" style="font-family:monospace">{{ $req->tracking_number }}</div>
+                                <div class="request-title fw-bold mt-1 mb-0">{{ ucwords(str_replace('_',' ',$req->request_type)) }}</div>
+                                <div class="request-meta text-muted small mt-1">
+                                    <i class="ti ti-calendar me-1"></i>{{ $req->created_at->format('M d, Y') }}
+                                    @if($req->assignedTo)
+                                        <span class="mx-1">•</span>
+                                        <i class="ti ti-user-check text-primary me-1"></i>{{ $req->assignedTo->name }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge-status badge-{{ $req->status }}">{{ ucwords(str_replace('_',' ',$req->status)) }}</span>
+                            </div>
                         </div>
-                        <span class="badge-status badge-{{ $req->status }}">{{ ucwords(str_replace('_',' ',$req->status)) }}</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small">
+                                <i class="ti ti-messages me-1"></i>Case Chat ({{ $req->comments_count ?? 0 }})
+                            </span>
+                            <span class="text-primary small fw-semibold">View Case Chat &rarr;</span>
+                        </div>
                     </div>
-                </div>
+                </a>
                 @empty
                 @forelse($myDocuments as $doc)
-                <div class="request-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="request-id">{{ $doc->document_number }}</div>
-                            <div class="request-title">{{ \App\Models\Document::TYPES[$doc->document_type] ?? $doc->document_type }}</div>
-                            <div class="request-meta">{{ $doc->issue_date->format('M d, Y') }}</div>
+                <a href="{{ route('portal.track.detail', $doc->document_number) }}" class="text-decoration-none d-block mb-2 text-dark">
+                    <div class="request-item p-3 rounded border hover-shadow" style="background:#fff;transition:transform 0.15s,box-shadow 0.15s">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="request-id fw-bold text-primary" style="font-family:monospace">{{ $doc->document_number }}</div>
+                                <div class="request-title fw-bold mt-1">{{ \App\Models\Document::TYPES[$doc->document_type] ?? $doc->document_type }}</div>
+                                <div class="request-meta text-muted small mt-1"><i class="ti ti-calendar me-1"></i>{{ $doc->issue_date->format('M d, Y') }}</div>
+                            </div>
+                            <span class="badge-status badge-{{ $doc->status }}">{{ ucwords(str_replace('_',' ',$doc->status)) }}</span>
                         </div>
-                        <span class="badge-status badge-{{ $doc->status }}">{{ ucwords(str_replace('_',' ',$doc->status)) }}</span>
+                        <div class="d-flex justify-content-end align-items-center mt-2 pt-2 border-top">
+                            <span class="text-primary small fw-semibold">View Status &rarr;</span>
+                        </div>
                     </div>
-                </div>
+                </a>
                 @empty
                 <p class="text-muted small text-center py-4 mb-0">No requests submitted yet.</p>
                 @endforelse

@@ -1,12 +1,12 @@
 @extends('layouts.portal')
-@section('title', 'Who We Are — Barangay San Jose')
+@section('title', 'About — ' . ($settings['barangay_name'] ?? 'Barangay San Jose'))
 @section('content')
 
 <div class="container-fluid px-3 px-md-5 my-4">
-    {{-- Back to Portal Button --}}
+    {{-- Back Button --}}
     <div class="mb-3">
         <a href="{{ session('resident_id') ? route('portal.dashboard') : route('portal.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" style="border-radius:8px">
-            <i class="ti ti-arrow-left"></i> Back to Portal
+            <i class="ti ti-arrow-left"></i> Back
         </a>
     </div>
 

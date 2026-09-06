@@ -89,6 +89,7 @@
                     <h5 class="mb-0 mt-1">{{ \App\Models\Document::TYPES[$document->document_type] ?? $document->document_type }}</h5>
                 </div>
                 <div class="d-flex gap-2 align-items-center flex-wrap">
+                    {!! $document->aging_badge !!}
                     <span class="badge-status badge-{{ $document->status }}">{{ ucwords(str_replace('_',' ',$document->status)) }}</span>
                     @if(in_array($document->status, ['processing','ready_for_pickup','released']) && auth()->user()->canDo('documents.print'))
                         <a href="{{ route('admin.documents.print',$document) }}" class="btn btn-navy btn-sm" target="_blank">

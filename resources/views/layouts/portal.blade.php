@@ -63,9 +63,11 @@
         </a>
         <div class="portal-desktop-nav-links d-flex align-items-center gap-1">
             <a href="{{ route('portal.dashboard') }}" class="{{ request()->routeIs('portal.dashboard') || request()->routeIs('portal.index') || request()->routeIs('portal.home') ? 'active' : '' }}"><i class="ti ti-home me-1"></i>Home</a>
-            <a href="{{ route('portal.announcements') }}" class="{{ request()->routeIs('portal.announcements*') ? 'active' : '' }}"><i class="ti ti-speakerphone me-1"></i>Announcements</a>
-            <a href="{{ route('portal.about') }}" class="{{ request()->routeIs('portal.about*') ? 'active' : '' }}"><i class="ti ti-info-circle me-1"></i>Who We Are</a>
-            <a href="{{ route('portal.careers') }}" class="{{ request()->routeIs('portal.careers*') ? 'active' : '' }}"><i class="ti ti-briefcase me-1"></i>Careers</a>
+            @if(session('resident_id'))
+            <a href="{{ route('portal.track') }}" class="{{ request()->routeIs('portal.track*') ? 'active' : '' }}"><i class="ti ti-messages me-1"></i>My Requests &amp; Chats</a>
+            @endif
+            <a href="{{ route('portal.announcements') }}" class="{{ request()->routeIs('portal.announcements*') ? 'active' : '' }}"><i class="ti ti-speakerphone me-1"></i>Updates</a>
+            <a href="{{ route('portal.about') }}" class="{{ request()->routeIs('portal.about*') ? 'active' : '' }}"><i class="ti ti-info-circle me-1"></i>About</a>
         </div>
         <div class="d-flex align-items-center gap-2">
             @if(session('resident_id'))
@@ -77,10 +79,26 @@
                         </div>
                         <span style="font-size:13px;font-weight:600;color:#1a3a6b">{{ $res->first_name ?? 'Resident' }}</span>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius:12px;min-width:210px">
+                        <li>
+                            <a href="{{ route('portal.dashboard') }}" class="dropdown-item py-2">
+                                <i class="ti ti-layout-dashboard me-2 text-primary"></i>Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('portal.track') }}" class="dropdown-item py-2">
+                                <i class="ti ti-messages me-2 text-primary"></i>My Requests &amp; Chats
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('portal.profile') }}" class="dropdown-item py-2">
+                                <i class="ti ti-user me-2 text-muted"></i>Profile Settings
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('portal.logout') }}">@csrf
-                                <button type="submit" class="dropdown-item text-danger"><i class="ti ti-logout me-2"></i>Logout</button>
+                                <button type="submit" class="dropdown-item text-danger py-2"><i class="ti ti-logout me-2"></i>Logout</button>
                             </form>
                         </li>
                     </ul>
@@ -150,14 +168,14 @@
         <a href="{{ route('portal.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('portal.dashboard') ? 'active' : '' }}">
             <i class="ti ti-home"></i><span>Home</span>
         </a>
+        <a href="{{ route('portal.track') }}" class="mobile-nav-item {{ request()->routeIs('portal.track*') ? 'active' : '' }}">
+            <i class="ti ti-messages"></i><span>My Cases</span>
+        </a>
         <a href="{{ route('portal.announcements') }}" class="mobile-nav-item {{ request()->routeIs('portal.announcements*') ? 'active' : '' }}">
             <i class="ti ti-speakerphone"></i><span>Updates</span>
         </a>
         <a href="{{ route('portal.about') }}" class="mobile-nav-item {{ request()->routeIs('portal.about*') ? 'active' : '' }}">
             <i class="ti ti-info-circle"></i><span>About</span>
-        </a>
-        <a href="{{ route('portal.careers') }}" class="mobile-nav-item {{ request()->routeIs('portal.careers*') ? 'active' : '' }}">
-            <i class="ti ti-briefcase"></i><span>Careers</span>
         </a>
     </nav>
     @endif

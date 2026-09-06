@@ -45,6 +45,7 @@ Route::middleware('maintenance')->group(function () {
         Route::post('/report', [ResidentPortalController::class, 'submitReport'])->name('report.submit');
         Route::get('/track', [ResidentPortalController::class, 'track'])->name('track');
         Route::get('/track/{tracking}', [ResidentPortalController::class, 'trackDetail'])->name('track.detail');
+        Route::post('/track/{tracking}/comment', [ResidentPortalController::class, 'storeComment'])->name('track.comment');
         Route::get('/announcements', [ResidentPortalController::class, 'announcements'])->name('announcements');
         Route::get('/profile', [ResidentPortalController::class, 'profile'])->name('profile');
         Route::put('/profile', [ResidentPortalController::class, 'updateProfile'])->name('profile.update');
@@ -86,6 +87,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('citizen-requests', CitizenRequestController::class);
     Route::post('/citizen-requests/{citizenRequest}/assign', [CitizenRequestController::class, 'assign'])->middleware('role:captain,administrator,secretary')->name('citizen-requests.assign');
     Route::post('/citizen-requests/{citizenRequest}/status', [CitizenRequestController::class, 'updateStatus'])->name('citizen-requests.status');
+    Route::post('/citizen-requests/{citizenRequest}/comment', [CitizenRequestController::class, 'storeComment'])->name('citizen-requests.comment');
     Route::post('/citizen-requests/{citizenRequest}/convert', [CitizenRequestController::class, 'convertToServiceLog'])->middleware('role:captain,administrator,secretary')->name('citizen-requests.convert');
 
     // Issue Mapping

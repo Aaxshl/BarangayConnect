@@ -93,9 +93,12 @@
                 <td style="font-size:13px">{{ Str::limit($doc->purpose, 35) }}</td>
                 <td style="font-size:12px;color:#64748b">{{ $doc->issue_date->format('M d, Y') }}</td>
                 <td>
-                    <span class="badge-status badge-{{ $doc->status }}">
-                        {{ ucwords(str_replace('_',' ',$doc->status)) }}
-                    </span>
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                        <span class="badge-status badge-{{ $doc->status }}">
+                            {{ ucwords(str_replace('_',' ',$doc->status)) }}
+                        </span>
+                        {!! $doc->aging_badge !!}
+                    </div>
                 </td>
                 <td>
                     <div class="d-flex gap-1">

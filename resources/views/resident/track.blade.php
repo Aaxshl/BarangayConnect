@@ -237,8 +237,11 @@
                     </div>
                     @endif
 
-                    <div class="d-flex justify-content-end align-items-center mt-3 pt-2 border-top">
-                        <span class="text-primary small fw-semibold">View Full Details &amp; History <i class="ti ti-arrow-right ms-1"></i></span>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small">
+                            <i class="ti ti-messages me-1"></i><span class="comment-count-{{ $req->id }}">{{ $req->comments->count() }}</span> message(s)
+                        </span>
+                        <span class="text-primary small fw-semibold">Click to view details &amp; discussion <i class="ti ti-arrow-right ms-1"></i></span>
                     </div>
                 </div>
                 @empty
@@ -277,9 +280,14 @@
                             <span class="badge-status badge-{{ $req->status }}">{{ ucwords(str_replace('_',' ',$req->status)) }}</span>
                         </div>
 
-                        @if($req->resolution_note)
-                            <div class="text-success small pt-1"><i class="ti ti-check me-1"></i>Resolution: {{ $req->resolution_note }}</div>
-                        @endif
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top flex-wrap gap-2">
+                            @if($req->resolution_note)
+                                <div class="text-success small"><i class="ti ti-check me-1"></i>Resolution: {{ $req->resolution_note }}</div>
+                            @else
+                                <div></div>
+                            @endif
+                            <span class="text-primary small fw-semibold">Click to view details &amp; history <i class="ti ti-arrow-right ms-1"></i></span>
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -501,9 +509,76 @@
                     </div>
                     @endif
                 </div>
+
+                {{-- Case Communication Thread inside Modal --}}
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0">
+                            <i class="ti ti-messages me-2 text-primary"></i>Case Discussion &amp; Direct Messaging
+                        </h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 modal-comments-badge-{{ $req->id }}">{{ $req->comments->count() }} messages</span>
+                    </div>
+                    <div class="text-muted small mb-3">
+                        @if($req->assignedTo)
+                            <i class="ti ti-shield-check text-success me-1"></i>Private conversation with assigned officer: <strong>{{ $req->assignedTo->name }}</strong>
+                        @else
+                            <i class="ti ti-clock text-warning me-1"></i>Awaiting officer assignment. Messages sent here will be received by the designated officer assigned to this case.
+                        @endif
+                    </div>
+
+                    {{-- Messages List --}}
+                    <div id="chat-messages-{{ $req->id }}" class="mb-3 p-2 bg-light rounded border chat-messages-container" style="max-height: 260px; overflow-y: auto;">
+                        @forelse($req->comments as $c)
+                            <div class="p-2.5 mb-2 rounded border {{ $c->sender_type === 'resident' ? 'bg-primary-subtle border-primary-subtle text-dark' : 'bg-white border-light-subtle' }}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong style="font-size:12px;color:{{ $c->sender_type === 'resident' ? '#0c4a6e' : '#1e3a8a' }}">
+                                        @if($c->sender_type === 'resident')
+                                            <i class="ti ti-user me-1"></i>You (Resident)
+                                        @else
+                                            <i class="ti ti-shield text-primary me-1"></i>Barangay Office ({{ optional($c->user)->name ?? 'Staff' }})
+                                        @endif
+                                    </strong>
+                                    <span class="text-muted" style="font-size:10.5px;">
+                                        {{ $c->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+                                <div style="font-size:12.5px; line-height: 1.5; white-space: pre-wrap;">{{ $c->message }}</div>
+                                @if($c->attachment)
+                                    <div class="mt-1 pt-1 border-top small">
+                                        <a href="{{ asset('storage/'.$c->attachment) }}" target="_blank" style="color:#185fa5;text-decoration:none;font-weight:600;font-size:11.5px">
+                                            <i class="ti ti-paperclip me-1"></i>View Attachment
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="text-center py-3 text-muted small chat-empty-placeholder">
+                                <i class="ti ti-message-dots mb-1 d-block" style="font-size:22px;opacity:0.5"></i>
+                                No messages yet. Send a message or follow-up below.
+                            </div>
+                        @endforelse
+                    </div>
+
+                    {{-- Reply Form --}}
+                    @if(!in_array($req->status, ['closed', 'rejected', 'cancelled']))
+                    <form method="POST" action="{{ route('portal.track.comment', $req->tracking_number) }}" enctype="multipart/form-data" class="ajax-comment-form" data-request-id="{{ $req->id }}">
+                        @csrf
+                        <div class="mb-2">
+                            <textarea name="message" class="form-control form-control-sm" rows="2" placeholder="Send a message or reply to the assigned officer..." required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <input type="file" name="attachment" class="form-control form-control-sm" style="max-width:220px" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                            <button type="submit" class="btn btn-navy btn-sm submit-comment-btn">
+                                <i class="ti ti-send me-1"></i>Send Reply
+                            </button>
+                        </div>
+                        <div class="ajax-status-alert mt-2" style="display:none"></div>
+                    </form>
+                    @endif
+                </div>
             </div>
 
-            <div class="modal-footer bg-light" style="padding:12px 28px">
+            <div class="modal-footer bg-light d-flex justify-content-end align-items-center" style="padding:12px 28px">
                 <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal" style="border-radius:8px">Close</button>
             </div>
         </div>
@@ -513,10 +588,129 @@
 
 @push('scripts')
 <script>
-document.getElementById('track-search').addEventListener('input', function() {
+document.getElementById('track-search')?.addEventListener('input', function() {
     const q = this.value.toLowerCase().trim();
     document.querySelectorAll('.track-item').forEach(el => {
         el.style.display = q === '' || el.dataset.id.includes(q) ? '' : 'none';
+    });
+});
+
+// Auto reopen modal on reload (fallback if non-ajax)
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('open_modal'))
+        const target = document.getElementById('{{ session('open_modal') }}');
+        if (target) {
+            const bsModal = new bootstrap.Modal(target);
+            bsModal.show();
+        }
+    @endif
+    if (window.location.hash && window.location.hash.startsWith('#repModal-')) {
+        const hashTarget = document.querySelector(window.location.hash);
+        if (hashTarget) {
+            const bsModal = new bootstrap.Modal(hashTarget);
+            bsModal.show();
+        }
+    }
+});
+
+// Handle AJAX submission inside modals
+document.querySelectorAll('.ajax-comment-form').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = form.querySelector('.submit-comment-btn');
+        const origBtnHtml = btn.innerHTML;
+        const statusBox = form.querySelector('.ajax-status-alert');
+        const reqId = form.dataset.requestId;
+        const chatBox = document.getElementById('chat-messages-' + reqId);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+        if (statusBox) statusBox.style.display = 'none';
+
+        try {
+            const formData = new FormData(form);
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                       || form.querySelector('input[name="_token"]').value;
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Remove empty placeholder if any
+                const emptyPlaceholder = chatBox.querySelector('.chat-empty-placeholder');
+                if (emptyPlaceholder) emptyPlaceholder.remove();
+
+                // Append new message bubble
+                const bubble = document.createElement('div');
+                bubble.className = 'p-2.5 mb-2 rounded border bg-primary-subtle border-primary-subtle text-dark';
+                
+                let attachmentHtml = '';
+                if (data.comment.attachment_url) {
+                    attachmentHtml = `
+                        <div class="mt-1 pt-1 border-top small">
+                            <a href="${data.comment.attachment_url}" target="_blank" style="color:#185fa5;text-decoration:none;font-weight:600;font-size:11.5px">
+                                <i class="ti ti-paperclip me-1"></i>View Attachment
+                            </a>
+                        </div>
+                    `;
+                }
+
+                // Helper to escape HTML
+                const div = document.createElement('div');
+                div.textContent = data.comment.message;
+                const escapedMsg = div.innerHTML;
+
+                bubble.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong style="font-size:12px;color:#0c4a6e">
+                            <i class="ti ti-user me-1"></i>You (Resident)
+                        </strong>
+                        <span class="text-muted" style="font-size:10.5px;">Just now</span>
+                    </div>
+                    <div style="font-size:12.5px; line-height: 1.5; white-space: pre-wrap;">${escapedMsg}</div>
+                    ${attachmentHtml}
+                `;
+                chatBox.appendChild(bubble);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Update count badges
+                document.querySelectorAll('.comment-count-' + reqId).forEach(el => {
+                    el.textContent = data.comments_count;
+                });
+                const modalBadge = form.closest('.modal-body').querySelector('.modal-comments-badge-' + reqId);
+                if (modalBadge) {
+                    modalBadge.textContent = data.comments_count + ' messages';
+                }
+
+                // Reset form
+                form.reset();
+
+                // Show subtle success notice
+                if (statusBox) {
+                    statusBox.className = 'ajax-status-alert alert alert-success py-1.5 px-3 small mt-2 mb-0';
+                    statusBox.innerHTML = '<i class="ti ti-check me-1"></i> Message sent successfully to the Barangay Office!';
+                    statusBox.style.display = 'block';
+                    setTimeout(() => { statusBox.style.display = 'none'; }, 4000);
+                }
+            } else {
+                alert(data.message || 'Error sending message. Please try again.');
+            }
+        } catch (err) {
+            console.error('AJAX error, falling back to form submit', err);
+            form.submit();
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origBtnHtml;
+        }
     });
 });
 </script>

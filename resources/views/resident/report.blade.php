@@ -20,6 +20,17 @@
                 <div class="invalid-feedback">{{ $errors->first('request_type') }}</div>
             </div>
             <div class="mb-3">
+                <label class="form-label">Urgency / Severity Level</label>
+                <select name="priority" class="form-select @error('priority') is-invalid @enderror">
+                    <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low - Minor issue / non-critical</option>
+                    <option value="medium" {{ old('priority', 'medium') == 'medium' ? 'selected' : '' }}>Medium - Normal priority (Standard)</option>
+                    <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High - Needs prompt attention</option>
+                    <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent - Immediate safety hazard</option>
+                </select>
+                <div class="form-text" style="font-size:12px;color:#64748b">Helps the barangay prioritize response and action.</div>
+                <div class="invalid-feedback">{{ $errors->first('priority') }}</div>
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Location *</label>
                 <div class="d-flex gap-2">
                     <input type="text" name="location" id="location-text" class="form-control @error('location') is-invalid @enderror" placeholder="e.g. Purok 2, near sari-sari store" value="{{ old('location') }}" required>

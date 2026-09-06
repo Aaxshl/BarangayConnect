@@ -29,7 +29,7 @@
 
             <!-- Type Filter -->
             <div>
-                <select name="type" class="form-select form-select-sm" onchange="document.getElementById('autoFilterForm').submit()" style="min-width:180px">
+                <select name="type" class="form-select form-select-sm" onchange="document.getElementById('autoFilterForm').submit()" style="min-width:160px">
                     <option value="">All Issue Types</option>
                     @foreach(\App\Models\CitizenRequest::TYPES as $t)
                         <option value="{{ $t }}" {{ request('type') == $t ? 'selected' : '' }}>
@@ -39,7 +39,29 @@
                 </select>
             </div>
 
-            @if(request('search') || request('status') || request('type'))
+            <!-- Priority Filter -->
+            <div>
+                <select name="priority" class="form-select form-select-sm" onchange="document.getElementById('autoFilterForm').submit()" style="min-width:140px">
+                    <option value="">All Priorities</option>
+                    @foreach(\App\Models\CitizenRequest::PRIORITIES as $pKey => $pLabel)
+                        <option value="{{ $pKey }}" {{ request('priority') == $pKey ? 'selected' : '' }}>
+                            {{ $pLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Aging SLA Filter -->
+            <div>
+                <select name="aging" class="form-select form-select-sm" onchange="document.getElementById('autoFilterForm').submit()" style="min-width:140px">
+                    <option value="">All Aging SLAs</option>
+                    <option value="normal" {{ request('aging') == 'normal' ? 'selected' : '' }}>On Track (0-2d)</option>
+                    <option value="warning" {{ request('aging') == 'warning' ? 'selected' : '' }}>Attention (3-5d)</option>
+                    <option value="overdue" {{ request('aging') == 'overdue' ? 'selected' : '' }}>Overdue (6+d)</option>
+                </select>
+            </div>
+
+            @if(request('search') || request('status') || request('type') || request('priority') || request('aging'))
                 <a href="{{ route('admin.citizen-requests.index') }}" class="btn btn-outline-secondary btn-sm" title="Clear all filters">
                     <i class="ti ti-rotate-2 me-1"></i>Reset
                 </a>
@@ -75,7 +97,14 @@
                 <i class="ti ti-calendar me-1 ms-2"></i>{{ $req->created_at->format('M d, Y g:i A') }}
             </small>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            {!! $req->priority_badge !!}
+            {!! $req->aging_badge !!}
+            @if(($req->comments_count ?? 0) > 0)
+                <span class="badge bg-light text-primary border" title="{{ $req->comments_count }} update(s)">
+                    <i class="ti ti-messages me-1"></i>{{ $req->comments_count }}
+                </span>
+            @endif
             @if($req->assignedTo)
                 <span class="badge bg-light text-dark border"><i class="ti ti-user-check me-1"></i>{{ $req->assignedTo->name }}</span>
             @endif
@@ -168,7 +197,10 @@
                             Submitted {{ $req->created_at->format('M d, Y') }} · Resolved on {{ optional($req->resolved_at)->format('M d, Y') ?? 'N/A' }}
                         </small>
                     </div>
-                    <span class="badge-status badge-{{ $req->status }}">{{ ucwords(str_replace('_',' ',$req->status)) }}</span>
+                    <div class="d-flex align-items-center gap-1">
+                        {!! $req->priority_badge !!}
+                        <span class="badge-status badge-{{ $req->status }}">{{ ucwords(str_replace('_',' ',$req->status)) }}</span>
+                    </div>
                 </div>
                 
                 @if($req->resolution_note)
