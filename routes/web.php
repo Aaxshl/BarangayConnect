@@ -135,7 +135,21 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
-    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');
+    // Notifications
+    Route::post('/notifications/{id}/read', function ($id) {
+        $notification = auth()->user()->notifications()->where('id', $id)->first();
+        if ($notification) {
+            $notification->markAsRead();
+            $url = $notification->data['url'] ?? route('admin.dashboard');
+            return redirect($url);
+        }
+        return back();
+    })->name('notifications.read');
+
+    Route::post('/notifications/mark-all-read', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back()->with('success', 'All notifications marked as read.');
+    })->name('notifications.markAllRead');
 });
 
 // SK Portal Routes (Sangguniang Kabataan)

@@ -2,7 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\{ServiceLog, Resident, User};
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ServiceLogController extends Controller {
     public function index(Request $request) {
@@ -63,6 +65,17 @@ class ServiceLogController extends Controller {
 
         $serviceLog = ServiceLog::create($validated);
 
+        if (!empty($serviceLog->assigned_to)) {
+            $assignedUser = User::find($serviceLog->assigned_to);
+            if ($assignedUser) {
+                try {
+                    $assignedUser->notify(new TaskAssignedNotification($serviceLog));
+                } catch (\Throwable $e) {
+                    Log::error("Failed to notify user {$assignedUser->id}: " . $e->getMessage());
+                }
+            }
+        }
+
         return redirect()->route('admin.service-logs.show', $serviceLog)
             ->with('success', 'Service log entry created successfully.');
     }
@@ -122,6 +135,13 @@ class ServiceLogController extends Controller {
         $serviceLog->update($updateData);
 
         $assignedUser = User::find($validated['assigned_to']);
+        if ($assignedUser) {
+            try {
+                $assignedUser->notify(new TaskAssignedNotification($serviceLog));
+            } catch (\Throwable $e) {
+                Log::error("Failed to notify user {$assignedUser->id}: " . $e->getMessage());
+            }
+        }
         return back()->with('success', 'Assigned to ' . $assignedUser->name . ' for ' . date('M d, Y', strtotime($validated['date_of_service'])) . '.');
     }
 

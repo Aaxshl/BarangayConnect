@@ -2,7 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\{CitizenRequest, CitizenRequestComment, ServiceLog, User};
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CitizenRequestController extends Controller {
     public function index(Request $request) {
@@ -93,6 +95,13 @@ class CitizenRequestController extends Controller {
         ]);
 
         $assignedUser = User::find($request->assigned_to);
+        if ($assignedUser) {
+            try {
+                $assignedUser->notify(new TaskAssignedNotification($citizenRequest));
+            } catch (\Throwable $e) {
+                Log::error("Failed to notify user {$assignedUser->id}: " . $e->getMessage());
+            }
+        }
         $assignedName = $assignedUser ? $assignedUser->name : 'Staff';
 
         return back()->with('success', "Assigned to {$assignedName}. Status set to " . ucwords(str_replace('_',' ',$newStatus)) . ".");
