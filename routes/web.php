@@ -45,6 +45,7 @@ Route::middleware('maintenance')->group(function () {
         Route::post('/report', [ResidentPortalController::class, 'submitReport'])->name('report.submit');
         Route::get('/track', [ResidentPortalController::class, 'track'])->name('track');
         Route::get('/track/{tracking}', [ResidentPortalController::class, 'trackDetail'])->name('track.detail');
+        Route::post('/track/{tracking}/payment-proof', [ResidentPortalController::class, 'uploadPaymentProof'])->name('track.paymentProof');
         Route::post('/track/{tracking}/comment', [ResidentPortalController::class, 'storeComment'])->name('track.comment');
         Route::get('/announcements', [ResidentPortalController::class, 'announcements'])->name('announcements');
         Route::get('/profile', [ResidentPortalController::class, 'profile'])->name('profile');
@@ -73,6 +74,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
         Route::put('/documents/templates/{type}', [App\Http\Controllers\DocumentTemplateController::class, 'update'])->name('documents.templates.update');
         Route::post('/documents/templates/{type}/reset', [App\Http\Controllers\DocumentTemplateController::class, 'reset'])->name('documents.templates.reset');
         Route::post('/documents/{document}/status', [DocumentController::class, 'updateStatus'])->name('documents.status');
+        Route::post('/documents/{document}/payment', [DocumentController::class, 'verifyPayment'])->name('documents.payment');
         Route::post('/documents/{document}/reissue', [DocumentController::class, 'reissue'])->name('documents.reissue');
     });
     Route::resource('documents', DocumentController::class);
@@ -127,8 +129,10 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
         Route::put('/settings/permissions', [SettingController::class, 'updatePermissions'])->name('settings.permissions');
         Route::post('/settings/permissions/reset', [SettingController::class, 'resetPermissions'])->name('settings.permissions.reset');
         Route::put('/settings/brackets', [SettingController::class, 'updateAgeBrackets'])->name('settings.brackets');
-        Route::post('/settings/brackets/reset', [SettingController::class, 'resetAgeBrackets'])->name('settings.brackets.reset');
         Route::post('/settings/logo', [SettingController::class, 'uploadLogo'])->name('settings.logo');
+        Route::put('/settings/fees', [SettingController::class, 'updateDocumentFees'])->name('settings.fees');
+        Route::post('/settings/fees/reset', [SettingController::class, 'resetDocumentFees'])->name('settings.fees.reset');
+        Route::put('/settings/gcash', [SettingController::class, 'updateGcashSettings'])->name('settings.gcash');
     });
 
     // Profile

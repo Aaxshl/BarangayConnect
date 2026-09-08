@@ -40,16 +40,23 @@ class DocumentController extends Controller {
         ]);
         $year  = date('Y');
         $count = Document::whereYear('created_at',$year)->count() + 1;
+        $unitFee = Setting::getFeeFor($validated['document_type']);
+        $totalFee = $unitFee * (int)$validated['number_of_copies'];
+
         $validated['document_number'] = 'DOC-'.$year.'-'.str_pad($count,4,'0',STR_PAD_LEFT);
-        $validated['issue_date'] = today();
-        $validated['status']     = 'pending';
-        $validated['issued_by']  = auth()->id();
+        $validated['issue_date']     = today();
+        $validated['status']         = 'pending';
+        $validated['issued_by']      = auth()->id();
+        $validated['fee']            = $totalFee;
+        $validated['payment_method'] = $totalFee <= 0 ? 'free' : 'cash';
+        $validated['payment_status'] = $totalFee <= 0 ? 'waived' : 'unpaid';
+
         $document = Document::create($validated);
         return redirect()->route('admin.documents.show',$document)->with('success','Document request created.');
     }
 
     public function show(Document $document) {
-        $document->load('resident','issuedBy');
+        $document->load('resident','issuedBy','paymentVerifiedBy');
         // Auto-transition: pending → under_review when admin first views
         if ($document->status === 'pending') {
             $document->update(['status' => 'under_review', 'viewed_at' => now()]);
@@ -82,11 +89,29 @@ class DocumentController extends Controller {
                 return back()->with('success','Document marked as ready for pickup.');
 
             case 'release':
-                if ($document->status !== 'ready_for_pickup') {
-                    return back()->with('error','Document must be ready for pickup before releasing.');
+                if (in_array($document->status, ['released','cancelled'])) {
+                    return back()->with('error','Cannot release a completed or cancelled document.');
                 }
+
+                // If document has a fee and is unpaid/declined, check if staff is confirming cash collection
+                if (!$document->isPaidOrWaived()) {
+                    if ($request->input('confirm_cash_payment') == '1') {
+                        $document->update([
+                            'payment_method'      => 'cash',
+                            'payment_status'      => 'verified',
+                            'payment_verified_at' => now(),
+                            'payment_verified_by' => auth()->id(),
+                            'payment_notes'       => $request->input('payment_notes') ?: 'Cash collected on counter upon release.',
+                        ]);
+                    } else {
+                        return back()->with('error', 'Cannot release document: Payment has not been verified yet. Please verify payment or confirm cash collection.');
+                    }
+                }
+
                 $document->update([
                     'status'      => 'released',
+                    'viewed_at'   => $document->viewed_at ?? now(),
+                    'issued_by'   => $document->issued_by ?? auth()->id(),
                     'released_at' => now(),
                     'remarks'     => $request->input('remarks', $document->remarks),
                 ]);
@@ -105,6 +130,71 @@ class DocumentController extends Controller {
 
             default:
                 return back()->with('error','Invalid action.');
+        }
+    }
+
+    /**
+     * Verify, waive, mark cash paid, or decline payment proof.
+     */
+    public function verifyPayment(Request $request, Document $document) {
+        $action = $request->input('action');
+
+        switch ($action) {
+            case 'verify':
+                $document->update([
+                    'payment_status'      => 'verified',
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => auth()->id(),
+                    'payment_notes'       => $request->input('notes', 'Payment proof verified and confirmed.'),
+                ]);
+                return back()->with('success', 'Payment verified successfully.');
+
+            case 'mark_cash':
+                $document->update([
+                    'payment_method'      => 'cash',
+                    'payment_status'      => 'verified',
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => auth()->id(),
+                    'payment_notes'       => $request->input('notes', 'Cash payment collected on counter.'),
+                ]);
+                return back()->with('success', 'Cash payment confirmed and marked as verified.');
+
+            case 'waive':
+                $document->update([
+                    'payment_status'      => 'waived',
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => auth()->id(),
+                    'payment_notes'       => $request->input('notes', 'Document fee waived / exempted by authority.'),
+                ]);
+                return back()->with('success', 'Document processing fee waived.');
+
+            case 'decline':
+                $request->validate([
+                    'payment_notes' => 'required|string|min:5',
+                ], [
+                    'payment_notes.required' => 'Please provide an explanation note on why the payment proof is being declined.',
+                ]);
+
+                $document->update([
+                    'payment_status'      => 'declined',
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => auth()->id(),
+                    'payment_notes'       => $request->input('payment_notes'),
+                ]);
+
+                // Send notification to resident if email is available
+                if ($document->resident && !empty($document->resident->email)) {
+                    try {
+                        $document->resident->notify(new \App\Notifications\PaymentProofDeclinedNotification($document));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Failed to dispatch payment proof declined email: ' . $e->getMessage());
+                    }
+                }
+
+                return back()->with('success', 'Payment proof declined. Explanation note has been recorded and the resident can submit a corrected proof.');
+
+            default:
+                return back()->with('error', 'Invalid payment action.');
         }
     }
 

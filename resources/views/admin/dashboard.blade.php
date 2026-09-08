@@ -418,9 +418,66 @@
                     <span class="text-muted ms-1" style="font-size:12px">({{ \App\Models\Document::TYPES[$rd->document_type] ?? $rd->document_type }})</span>
                     <div style="font-family:monospace;font-size:11px;color:#185fa5">{{ $rd->document_number }}</div>
                 </div>
-                <a href="{{ route('admin.documents.show', $rd->id) }}" class="btn btn-outline-success btn-xs py-1 px-2" style="font-size:11px">
-                    <i class="ti ti-circle-check me-1"></i>Release
-                </a>
+                <div class="d-flex gap-1 align-items-center">
+                    <a href="{{ route('admin.documents.show', $rd->id) }}" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size:11px" title="View details">
+                        <i class="ti ti-eye"></i>
+                    </a>
+                    @if(auth()->user()->canDo('documents.release'))
+                    <button type="button" class="btn btn-outline-success btn-xs py-1 px-2" style="font-size:11px" data-bs-toggle="modal" data-bs-target="#dashReleaseModal-{{ $rd->id }}">
+                        <i class="ti ti-circle-check me-1"></i>Release
+                    </button>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Dashboard Quick Release Modal --}}
+            <div class="modal fade" id="dashReleaseModal-{{ $rd->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ route('admin.documents.status', $rd) }}">
+                            @csrf
+                            <input type="hidden" name="action" value="release">
+                            <div class="modal-header">
+                                <h6 class="modal-title fw-bold"><i class="ti ti-circle-check text-success me-2"></i>Release Document to Resident</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p class="small text-muted mb-3">
+                                    Confirm release of <strong>{{ \App\Models\Document::TYPES[$rd->document_type] ?? $rd->document_type }}</strong>
+                                    (<span class="font-monospace text-primary">{{ $rd->document_number }}</span>) to
+                                    <strong>{{ optional($rd->resident)->full_name }}</strong>.
+                                </p>
+
+                                @if(!$rd->isPaidOrWaived())
+                                    <div class="alert alert-warning py-2 px-3 mb-3" style="font-size:13px">
+                                        <div class="fw-bold mb-1"><i class="ti ti-cash me-1"></i> Outstanding Fee: ₱{{ number_format($rd->fee, 2) }}</div>
+                                        <div class="form-check m-0">
+                                            <input class="form-check-input" type="checkbox" name="confirm_cash_payment" value="1" id="dashConfirmCash-{{ $rd->id }}" required>
+                                            <label class="form-check-label fw-semibold" for="dashConfirmCash-{{ $rd->id }}">
+                                                I confirm that cash payment of ₱{{ number_format($rd->fee, 2) }} was collected on counter.
+                                            </label>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="alert alert-success py-2 px-3 mb-3 small d-flex align-items-center gap-2">
+                                        <i class="ti ti-circle-check fs-5"></i>
+                                        <div>Payment verified ({!! $rd->payment_status_badge !!}).</div>
+                                    </div>
+                                @endif
+
+                                <label class="form-label small fw-semibold">Release notes (optional)</label>
+                                <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Claimed personally with ID">
+                            </div>
+                            <div class="modal-footer justify-content-between">
+                                <a href="{{ route('admin.documents.show', $rd->id) }}" class="btn btn-link btn-sm text-decoration-none p-0">View full details</a>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-success btn-sm"><i class="ti ti-circle-check me-1"></i>Confirm Release</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             @empty
             <p class="text-muted small mb-0 mt-2">No documents currently awaiting pickup.</p>

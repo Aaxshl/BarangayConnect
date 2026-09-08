@@ -11,8 +11,10 @@ class SettingController extends Controller {
         $permissionsMatrix = Setting::getPermissionsMatrix();
         $managedRoles = Setting::MANAGED_ROLES;
         $ageBrackets = Setting::getAgeBrackets();
+        $documentFees = Setting::getDocumentFees();
+        $gcashSettings = Setting::getGcashSettings();
 
-        return view('admin.settings.index', compact('settings', 'permissionCatalog', 'permissionsMatrix', 'managedRoles', 'ageBrackets'));
+        return view('admin.settings.index', compact('settings', 'permissionCatalog', 'permissionsMatrix', 'managedRoles', 'ageBrackets', 'documentFees', 'gcashSettings'));
     }
 
     public function update(Request $request) {
@@ -107,5 +109,49 @@ class SettingController extends Controller {
         $path = $request->file('logo')->store('settings', 'public');
         Setting::set('barangay_logo', $path);
         return back()->with('success', 'Logo updated successfully.');
+    }
+
+    public function updateDocumentFees(Request $request) {
+        $submitted = $request->input('fees', []);
+        $cleanFees = [];
+
+        foreach (\App\Models\Document::TYPES as $key => $label) {
+            $amount = isset($submitted[$key]) ? (float)$submitted[$key] : 0.00;
+            $cleanFees[$key] = max(0.00, $amount);
+        }
+
+        Setting::setDocumentFees($cleanFees);
+        return back()->with('success', 'Document fees updated successfully.');
+    }
+
+    public function resetDocumentFees() {
+        Setting::setDocumentFees(Setting::DEFAULT_DOCUMENT_FEES);
+        return back()->with('success', 'Document fees reset to standard defaults.');
+    }
+
+    public function updateGcashSettings(Request $request) {
+        $validated = $request->validate([
+            'gcash_account_name'   => 'nullable|string|max:100',
+            'gcash_account_number' => 'nullable|string|max:50',
+            'gcash_instructions'   => 'nullable|string|max:1000',
+            'gcash_qr_code'        => 'nullable|image|max:3072',
+        ]);
+
+        if ($request->filled('gcash_account_name')) {
+            Setting::set('gcash_account_name', $validated['gcash_account_name']);
+        }
+        if ($request->filled('gcash_account_number')) {
+            Setting::set('gcash_account_number', $validated['gcash_account_number']);
+        }
+        if ($request->has('gcash_instructions')) {
+            Setting::set('gcash_instructions', $validated['gcash_instructions']);
+        }
+
+        if ($request->hasFile('gcash_qr_code')) {
+            $path = $request->file('gcash_qr_code')->store('gcash', 'public');
+            Setting::set('gcash_qr_code', $path);
+        }
+
+        return back()->with('success', 'GCash payment information updated successfully.');
     }
 }

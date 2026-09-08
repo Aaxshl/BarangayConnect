@@ -75,6 +75,7 @@
                 <th>Resident</th>
                 <th>Type</th>
                 <th>Purpose</th>
+                <th>Payment</th>
                 <th>Requested</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -91,6 +92,12 @@
                 </td>
                 <td style="font-size:13px">{{ \App\Models\Document::TYPES[$doc->document_type] ?? $doc->document_type }}</td>
                 <td style="font-size:13px">{{ Str::limit($doc->purpose, 35) }}</td>
+                <td>
+                    <div style="font-size:12px">
+                        <span class="fw-bold">{{ (float)$doc->fee > 0 ? '₱' . number_format($doc->fee, 2) : 'Free' }}</span>
+                    </div>
+                    <div class="mt-1">{!! $doc->payment_status_badge !!}</div>
+                </td>
                 <td style="font-size:12px;color:#64748b">{{ $doc->issue_date->format('M d, Y') }}</td>
                 <td>
                     <div class="d-flex align-items-center gap-1 flex-wrap">
@@ -117,7 +124,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="8" class="text-center py-5 text-muted">
                     <i class="ti ti-file-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
                     No active document requests found.
                 </td>

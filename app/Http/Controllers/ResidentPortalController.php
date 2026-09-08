@@ -82,28 +82,56 @@ class ResidentPortalController extends Controller {
         return view('resident.dashboard', compact('resident','myRequests','myDocuments','announcements'));
     }
     public function requestForm() {
-        return view('resident.request');
+        $fees = Setting::getDocumentFees();
+        $gcash = Setting::getGcashSettings();
+        return view('resident.request', compact('fees', 'gcash'));
     }
     public function submitRequest(Request $request) {
         $validated = $request->validate([
-            'document_type'  => 'required|in:'.implode(',',array_keys(Document::TYPES)),
-            'purpose'        => 'required|string|max:255',
-            'number_of_copies' => 'required|integer|min:1|max:5',
+            'document_type'     => 'required|in:'.implode(',',array_keys(Document::TYPES)),
+            'purpose'           => 'required|string|max:255',
+            'number_of_copies'  => 'required|integer|min:1|max:5',
+            'payment_method'    => 'required|in:cash,gcash',
+            'payment_reference' => 'nullable|required_if:payment_method,gcash|string|max:100',
+            'payment_proof'     => 'nullable|required_if:payment_method,gcash|image|max:5120',
         ]);
+
         $resident = $this->getResident();
+        $unitFee = Setting::getFeeFor($validated['document_type']);
+        $totalFee = $unitFee * (int)$validated['number_of_copies'];
+
+        $paymentMethod = $totalFee <= 0 ? 'free' : $validated['payment_method'];
+        $paymentStatus = 'unpaid';
+
+        if ($totalFee <= 0) {
+            $paymentStatus = 'waived';
+        } elseif ($paymentMethod === 'gcash' && $request->hasFile('payment_proof')) {
+            $paymentStatus = 'pending_verification';
+        }
+
+        $proofPath = null;
+        if ($request->hasFile('payment_proof')) {
+            $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+        }
+
         $year  = date('Y');
         $count = Document::whereYear('created_at',$year)->count() + 1;
         $doc = Document::create([
-            'document_number'  => 'DOC-'.$year.'-'.str_pad($count,4,'0',STR_PAD_LEFT),
-            'resident_id'      => $resident->id,
-            'document_type'    => $validated['document_type'],
-            'purpose'          => $validated['purpose'],
-            'number_of_copies' => $validated['number_of_copies'],
-            'issue_date'       => today(),
-            'status'           => 'pending',
+            'document_number'   => 'DOC-'.$year.'-'.str_pad($count,4,'0',STR_PAD_LEFT),
+            'resident_id'       => $resident->id,
+            'document_type'     => $validated['document_type'],
+            'purpose'           => $validated['purpose'],
+            'number_of_copies'  => $validated['number_of_copies'],
+            'fee'               => $totalFee,
+            'payment_method'    => $paymentMethod,
+            'payment_status'    => $paymentStatus,
+            'payment_reference' => $validated['payment_reference'] ?? null,
+            'payment_proof'     => $proofPath,
+            'issue_date'        => today(),
+            'status'            => 'pending',
         ]);
         return redirect()->route('portal.track.detail', $doc->document_number)
-            ->with('success','Request submitted. Tracking: '.$doc->document_number);
+            ->with('success','Request submitted successfully! Tracking: '.$doc->document_number);
     }
     public function reportForm() { return view('resident.report'); }
     public function submitReport(Request $request) {
@@ -168,9 +196,11 @@ class ResidentPortalController extends Controller {
 
         $totalDocs = $activeDocuments->count() + $completedDocuments->count();
         $totalReports = $activeReports->count() + $completedReports->count();
+        $gcash = Setting::getGcashSettings();
 
         return view('resident.track', compact(
             'resident',
+            'gcash',
             'activeDocuments',
             'completedDocuments',
             'activeReports',
@@ -201,6 +231,34 @@ class ResidentPortalController extends Controller {
         abort_unless($item, 404);
         return view('resident.track-detail', compact('item','tracking'));
     }
+    public function uploadPaymentProof(Request $request, $tracking) {
+        $resident = $this->getResident();
+        $cleanTracking = trim($tracking);
+        $document = Document::where(function($q) use ($cleanTracking) {
+                $q->where('document_number', $cleanTracking)
+                  ->orWhere('document_number', strtoupper($cleanTracking));
+            })
+            ->where('resident_id', $resident->id)
+            ->firstOrFail();
+
+        $request->validate([
+            'payment_reference' => 'required|string|max:100',
+            'payment_proof'     => 'required|image|max:5120',
+        ]);
+
+        $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+
+        $document->update([
+            'payment_method'      => 'gcash',
+            'payment_reference'   => $request->payment_reference,
+            'payment_proof'       => $proofPath,
+            'payment_status'      => 'pending_verification',
+            'payment_notes'       => null, // Clear prior decline note
+        ]);
+
+        return back()->with('success', 'Payment proof submitted successfully! The Barangay Office will review your transaction.');
+    }
+
     public function storeComment(Request $request, $tracking) {
         $resident = $this->getResident();
         $cleanTracking = trim($tracking);

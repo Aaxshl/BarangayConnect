@@ -62,13 +62,149 @@
             @endif
         @else
             <h5>{{ \App\Models\Document::TYPES[$item->document_type] ?? $item->document_type }}</h5>
-            <div style="font-size:13.5px">Purpose: {{ $item->purpose }}</div>
-            <div class="mt-3"><span class="badge-status badge-{{ $item->status }}">{{ ucwords(str_replace('_',' ',$item->status)) }}</span></div>
+            <div style="font-size:13.5px" class="mb-2"><strong>Purpose:</strong> {{ $item->purpose }}</div>
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge-status badge-{{ $item->status }}">{{ ucwords(str_replace('_',' ',$item->status)) }}</span>
+                {!! $item->payment_status_badge !!}
+            </div>
+
+            {{-- Payment Breakdown Box --}}
+            <div class="p-3 rounded border mb-3 bg-light" style="font-size:13px">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Processing Fee ({{ $item->number_of_copies }} {{ Str::plural('copy', $item->number_of_copies) }}):</span>
+                    <span class="fw-bold">{{ (float)$item->fee > 0 ? '₱' . number_format($item->fee, 2) : 'FREE' }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Payment Method:</span>
+                    <span>{{ \App\Models\Document::PAYMENT_METHODS[$item->payment_method] ?? ucfirst($item->payment_method) }}</span>
+                </div>
+                @if($item->payment_reference)
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Payment Reference:</span>
+                    <span class="font-monospace fw-semibold">{{ $item->payment_reference }}</span>
+                </div>
+                @endif
+                @if($item->payment_proof)
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                    <span class="text-muted">Proof Submitted:</span>
+                    <a href="{{ asset('storage/' . $item->payment_proof) }}" target="_blank" class="text-primary fw-semibold" style="text-decoration:none">
+                        <i class="ti ti-photo me-1"></i>View Uploaded Receipt
+                    </a>
+                </div>
+                @endif
+            </div>
+
+            {{-- Declined Payment Alert with Note --}}
+            @if($item->payment_status === 'declined')
+                <div class="alert alert-danger py-3 px-3 mb-3" style="font-size:13px;border-radius:10px">
+                    <div class="d-flex align-items-center gap-2 fw-bold text-danger mb-1">
+                        <i class="ti ti-alert-triangle fs-5"></i> Payment Proof Declined by Barangay Staff
+                    </div>
+                    <div class="p-2.5 rounded bg-white text-danger border border-danger-subtle my-2" style="line-height:1.5">
+                        <strong>Reason / Note from Staff:</strong><br>
+                        {{ $item->payment_notes ?: 'Your payment proof or transaction reference could not be verified by the Barangay Office.' }}
+                    </div>
+                    <p class="mb-2 text-dark small">
+                        Please review the explanation above, verify your transaction details, and upload a valid receipt screenshot below.
+                    </p>
+                    <div class="mt-2 pt-2 border-top border-danger-subtle">
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#uploadProofModal">
+                            <i class="ti ti-upload me-1"></i> Submit Corrected Payment Proof
+                        </button>
+                    </div>
+                </div>
+            @elseif($item->payment_status === 'unpaid' && (float)$item->fee > 0)
+                <div class="alert alert-warning py-3 px-3 mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="font-size:13px">
+                    <div>
+                        <div class="fw-bold"><i class="ti ti-cash me-1"></i> Payment Required: ₱{{ number_format($item->fee, 2) }}</div>
+                        <div class="text-muted small">You can pay via GCash online or settle cash upon claiming.</div>
+                    </div>
+                    <button type="button" class="btn btn-navy btn-sm" data-bs-toggle="modal" data-bs-target="#uploadProofModal">
+                        <i class="ti ti-device-mobile me-1"></i> Pay with GCash
+                    </button>
+                </div>
+            @endif
+
             @if(in_array($item->status, ['ready_for_pickup', 'pending_pickup']))
-            <div class="info-banner mt-3"><i class="ti ti-building"></i>Ready for pickup at the Barangay Hall. Mon–Fri, 8 AM – 5 PM. Bring a valid ID.</div>
+            <div class="info-banner mt-3">
+                <i class="ti ti-building"></i>
+                Ready for pickup at the Barangay Hall. Mon–Fri, 8 AM – 5 PM.
+                @if(!$item->isPaidOrWaived())
+                    <strong>Please prepare ₱{{ number_format($item->fee, 2) }} for payment upon pickup.</strong>
+                @endif
+                Bring a valid ID.
+            </div>
             @endif
         @endif
     </div>
+
+    {{-- Upload Payment Proof Modal for Document --}}
+    @if(!$item instanceof \App\Models\CitizenRequest && (float)$item->fee > 0 && in_array($item->payment_status, ['unpaid', 'declined']))
+    @php $gcash = \App\Models\Setting::getGcashSettings(); @endphp
+    <div class="modal fade" id="uploadProofModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('portal.track.paymentProof', $item->document_number) }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold">
+                            <i class="ti ti-device-mobile text-primary me-2"></i>
+                            {{ $item->payment_status === 'declined' ? 'Re-upload GCash Payment Proof' : 'Submit GCash Payment Proof' }}
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="font-size:13px">
+                        @if($item->payment_status === 'declined' && $item->payment_notes)
+                        <div class="alert alert-danger py-2 px-3 mb-3 small" style="border-radius:8px">
+                            <strong><i class="ti ti-alert-triangle me-1"></i>Staff Explanation Note:</strong>
+                            <div class="mt-1" style="line-height:1.4">{{ $item->payment_notes }}</div>
+                        </div>
+                        @endif
+
+                        <div class="p-3 bg-light rounded border mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Total Due:</span>
+                                <span class="fw-bold fs-6 text-primary">₱{{ number_format($item->fee, 2) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted">GCash Account Name:</span>
+                                <span class="fw-semibold">{{ $gcash['account_name'] }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">GCash Number:</span>
+                                <span class="font-monospace fw-bold">{{ $gcash['account_number'] }}</span>
+                            </div>
+                        </div>
+
+                        @if(!empty($gcash['qr_code']))
+                        <div class="text-center mb-3">
+                            <img src="{{ asset('storage/' . $gcash['qr_code']) }}" alt="GCash QR" style="max-height:140px;object-fit:contain" class="border rounded p-2 bg-white shadow-sm">
+                            <div class="text-muted small mt-1">Scan or save QR code</div>
+                        </div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="modal_payment_reference">GCash Reference Number *</label>
+                            <input type="text" name="payment_reference" id="modal_payment_reference" class="form-control form-control-sm" placeholder="e.g. 100234892019" value="{{ old('payment_reference', $item->payment_reference) }}" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold" for="modal_payment_proof">Proof of Payment (Screenshot) *</label>
+                            <input type="file" name="payment_proof" id="modal_payment_proof" class="form-control form-control-sm" accept="image/*" required>
+                            <div class="form-text" style="font-size:11.5px">Upload the official GCash transaction confirmation receipt image.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-navy btn-sm">
+                            <i class="ti ti-upload me-1"></i> Submit Payment Proof
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     @if($item instanceof \App\Models\CitizenRequest)
     {{-- Resident & Barangay Communication Thread (Confidential to this Case) --}}

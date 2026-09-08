@@ -207,4 +207,42 @@ class Setting extends Model {
     public static function setPermissionsMatrix(array $matrix): void {
         self::set('role_permissions', json_encode($matrix));
     }
+
+    const DEFAULT_DOCUMENT_FEES = [
+        'barangay_clearance'    => 50.00,
+        'certificate_residency' => 50.00,
+        'certificate_indigency' => 0.00,
+        'business_clearance'    => 200.00,
+        'barangay_permit'       => 150.00,
+        'other'                 => 50.00,
+    ];
+
+    public static function getDocumentFees(): array {
+        $stored = self::get('document_fees');
+        if ($stored) {
+            $decoded = json_decode($stored, true);
+            if (is_array($decoded)) {
+                return array_merge(self::DEFAULT_DOCUMENT_FEES, $decoded);
+            }
+        }
+        return self::DEFAULT_DOCUMENT_FEES;
+    }
+
+    public static function setDocumentFees(array $fees): void {
+        self::set('document_fees', json_encode($fees));
+    }
+
+    public static function getFeeFor(string $documentType): float {
+        $fees = self::getDocumentFees();
+        return isset($fees[$documentType]) ? (float)$fees[$documentType] : 50.00;
+    }
+
+    public static function getGcashSettings(): array {
+        return [
+            'account_name'   => self::get('gcash_account_name', 'Barangay San Jose Treasury'),
+            'account_number' => self::get('gcash_account_number', '0917-000-0000'),
+            'instructions'   => self::get('gcash_instructions', 'Please send the exact amount via GCash Express Send. Save the screenshot of the transaction and enter the reference number upon submitting your request.'),
+            'qr_code'        => self::get('gcash_qr_code', null),
+        ];
+    }
 }

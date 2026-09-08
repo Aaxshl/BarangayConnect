@@ -20,6 +20,11 @@
             <i class="ti ti-shield-lock me-1"></i> Role Permissions Matrix
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-semibold" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees-pane" type="button" role="tab" style="font-size:13.5px;border-radius:8px;padding:8px 16px">
+            <i class="ti ti-cash me-1"></i> Document Fees &amp; GCash Setup
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content" id="settingsTabContent">
@@ -271,6 +276,110 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    {{-- TAB 4: Document Fees & GCash Setup --}}
+    <div class="tab-pane fade" id="fees-pane" role="tabpanel">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="row g-3">
+                    {{-- Left Column: Document Fees Configuration --}}
+                    <div class="col-12 col-md-7">
+                        <div class="card-custom">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1"><i class="ti ti-receipt-2 text-primary me-2"></i>Official Document Fees</h6>
+                                    <p class="text-muted small mb-0">Set standard processing fees per copy in Philippine Peso (₱). Enter 0.00 for free documents.</p>
+                                </div>
+                                <form method="POST" action="{{ route('admin.settings.fees.reset') }}" onsubmit="return confirm('Reset document fees to standard defaults?');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm" title="Reset standard fees">
+                                        <i class="ti ti-refresh me-1"></i>Reset
+                                    </button>
+                                </form>
+                            </div>
+
+                            <form method="POST" action="{{ route('admin.settings.fees') }}">
+                                @csrf @method('PUT')
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-3">
+                                        <thead>
+                                            <tr class="text-muted" style="font-size:12px;border-bottom:1px solid #e2e8f0">
+                                                <th>Document Type</th>
+                                                <th style="width:160px" class="text-end">Fee per Copy (₱)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach(\App\Models\Document::TYPES as $k => $v)
+                                            <tr>
+                                                <td class="py-2">
+                                                    <span class="fw-semibold" style="font-size:13.5px">{{ $v }}</span>
+                                                    <div class="text-muted" style="font-size:11px;font-family:monospace">{{ $k }}</div>
+                                                </td>
+                                                <td class="text-end py-2">
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text">₱</span>
+                                                        <input type="number" step="0.01" min="0" name="fees[{{ $k }}]" class="form-control text-end" value="{{ number_format($documentFees[$k] ?? 0.00, 2, '.', '') }}" required>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-navy btn-sm px-3">
+                                        <i class="ti ti-device-floppy me-1"></i>Save Document Fees
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{-- Right Column: GCash Payment Information --}}
+                    <div class="col-12 col-md-5">
+                        <div class="card-custom">
+                            <h6 class="fw-bold mb-1"><i class="ti ti-device-mobile text-primary me-2"></i>GCash / Online Payment</h6>
+                            <p class="text-muted small mb-3">This information and QR code will be displayed to residents choosing online payment.</p>
+
+                            <form method="POST" action="{{ route('admin.settings.gcash') }}" enctype="multipart/form-data">
+                                @csrf @method('PUT')
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold" style="font-size:13px">GCash Account Name</label>
+                                    <input type="text" name="gcash_account_name" class="form-control form-control-sm" placeholder="e.g. Barangay San Jose Treasury" value="{{ $gcashSettings['account_name'] ?? '' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold" style="font-size:13px">GCash Mobile / Account Number</label>
+                                    <input type="text" name="gcash_account_number" class="form-control form-control-sm" placeholder="e.g. 0917-123-4567" value="{{ $gcashSettings['account_number'] ?? '' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold" style="font-size:13px">Payment Instructions for Residents</label>
+                                    <textarea name="gcash_instructions" rows="3" class="form-control form-control-sm" placeholder="Instructions shown during checkout...">{{ $gcashSettings['instructions'] ?? '' }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold" style="font-size:13px">Official GCash QR Code Image</label>
+                                    @if(!empty($gcashSettings['qr_code']))
+                                        <div class="mb-2 text-center p-2 border rounded bg-light">
+                                            <img src="{{ asset('storage/' . $gcashSettings['qr_code']) }}" alt="GCash QR Code" style="max-height:160px;max-width:100%;object-fit:contain">
+                                        </div>
+                                    @endif
+                                    <input type="file" name="gcash_qr_code" class="form-control form-control-sm" accept="image/*">
+                                    <div class="form-text" style="font-size:11px">Upload standard QR code image (PNG, JPG, max 3MB).</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-navy btn-sm w-100">
+                                    <i class="ti ti-device-floppy me-1"></i>Save GCash Settings
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

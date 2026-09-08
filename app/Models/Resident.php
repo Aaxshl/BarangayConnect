@@ -2,12 +2,13 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 
 class Resident extends Model {
-    use HasFactory;
+    use HasFactory, Notifiable;
     protected $fillable = [
         'first_name','last_name','middle_name','birthdate','age','gender',
-        'civil_status','address','purok','zone','contact_number','password','occupation',
+        'civil_status','address','purok','zone','contact_number','email','password','occupation',
         'household_id','status','qr_code','photo','created_by'
     ];
     protected $hidden = ['password'];

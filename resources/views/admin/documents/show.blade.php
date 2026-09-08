@@ -147,6 +147,123 @@
                 @endif
             </div>
 
+            {{-- ═══ Payment Details & Verification Section ═══ --}}
+            <div class="mt-4 pt-3 border-bottom pb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <div class="fw-semibold" style="font-size:12.5px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">
+                            <i class="ti ti-cash me-1 text-primary"></i> Payment Information &amp; Verification
+                        </div>
+                        <div class="text-muted small">Track processing fees, online GCash transactions, and counter payments.</div>
+                    </div>
+                    <div>
+                        {!! $document->payment_status_badge !!}
+                    </div>
+                </div>
+
+                <div class="row g-3 p-3 rounded border bg-light mb-3 align-items-center" style="font-size:13px">
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted" style="font-size:11.5px">Total Fee Due</span>
+                        <div class="fw-bold fs-6 {{ (float)$document->fee > 0 ? 'text-primary' : 'text-success' }}">
+                            {{ (float)$document->fee > 0 ? '₱' . number_format($document->fee, 2) : 'FREE' }}
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted" style="font-size:11.5px">Payment Method</span>
+                        <div class="fw-semibold">
+                            {{ \App\Models\Document::PAYMENT_METHODS[$document->payment_method] ?? ucfirst($document->payment_method) }}
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted" style="font-size:11.5px">Transaction Reference</span>
+                        <div class="font-monospace fw-bold text-dark">
+                            {{ $document->payment_reference ?: '—' }}
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted" style="font-size:11.5px">Proof Screenshot</span>
+                        <div>
+                            @if($document->payment_proof)
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#viewProofModal">
+                                    <i class="ti ti-eye me-1"></i> View Receipt
+                                </button>
+                            @else
+                                <span class="text-muted">None uploaded</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Verification Audit / Declined Note --}}
+                    @if($document->payment_verified_at)
+                    <div class="col-12 pt-2 border-top">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 small text-muted">
+                            <div>
+                                <i class="ti ti-check-circle text-success me-1"></i>
+                                Action recorded by <strong>{{ optional($document->paymentVerifiedBy)->name ?? 'Barangay Staff' }}</strong>
+                                on {{ $document->payment_verified_at->format('M d, Y g:i A') }}
+                            </div>
+                            @if($document->payment_notes)
+                                <div class="text-dark"><strong>Note:</strong> {{ $document->payment_notes }}</div>
+                            @endif
+                        </div>
+                    </div>
+                    @elseif($document->payment_notes)
+                    <div class="col-12 pt-2 border-top">
+                        <div class="small text-danger"><strong>Note:</strong> {{ $document->payment_notes }}</div>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Action Controls for Payment --}}
+                @if(auth()->user()->canDo('documents.process'))
+                <div class="d-flex gap-2 flex-wrap">
+                    @if($document->payment_status !== 'verified')
+                        {{-- Verify Payment (If GCash proof or reference provided) --}}
+                        @if($document->payment_method === 'gcash' && ($document->payment_proof || $document->payment_reference))
+                            <form method="POST" action="{{ route('admin.documents.payment', $document) }}">
+                                @csrf
+                                <input type="hidden" name="action" value="verify">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="ti ti-check me-1"></i> Verify Payment
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Collect Cash on Counter --}}
+                        <form method="POST" action="{{ route('admin.documents.payment', $document) }}" onsubmit="return confirm('Confirm receipt of cash payment ₱{{ number_format($document->fee, 2) }} on counter?')">
+                            @csrf
+                            <input type="hidden" name="action" value="mark_cash">
+                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                <i class="ti ti-cash me-1"></i> Confirm Counter Cash (₱{{ number_format($document->fee, 2) }})
+                            </button>
+                        </form>
+
+                        {{-- Decline Payment Proof --}}
+                        @if($document->payment_method === 'gcash' && ($document->payment_proof || $document->payment_reference))
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#declinePaymentModal">
+                                <i class="ti ti-x me-1"></i> Decline Proof
+                            </button>
+                        @endif
+
+                        {{-- Waive Fee --}}
+                        @if((float)$document->fee > 0 && $document->payment_status !== 'waived')
+                            <form method="POST" action="{{ route('admin.documents.payment', $document) }}" onsubmit="return confirm('Waive document fee for this resident (e.g. Indigent exemption)?')">
+                                @csrf
+                                <input type="hidden" name="action" value="waive">
+                                <button type="submit" class="btn btn-outline-info btn-sm">
+                                    <i class="ti ti-discount-check me-1"></i> Waive Fee
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        <div class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3">
+                            <i class="ti ti-circle-check me-1"></i> Payment verified &amp; cleared for release.
+                        </div>
+                    @endif
+                </div>
+                @endif
+            </div>
+
             {{-- ═══ Progressive Action Buttons ═══ --}}
             @if(!in_array($document->status, ['released','cancelled']))
             <div class="mt-4">
@@ -181,6 +298,13 @@
                     @if($document->status === 'ready_for_pickup' && auth()->user()->canDo('documents.release'))
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#releaseModal">
                             <i class="ti ti-circle-check me-1"></i> Release to Resident
+                        </button>
+                    @endif
+
+                    {{-- Express Direct Release for walk-in residents (from pending, under_review, or processing) --}}
+                    @if(in_array($document->status, ['pending', 'under_review', 'processing']) && auth()->user()->canDo('documents.release'))
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#releaseModal" title="Release immediately without intermediate steps">
+                            <i class="ti ti-bolt me-1"></i> Express Release
                         </button>
                     @endif
 
@@ -229,15 +353,43 @@
                 @csrf
                 <input type="hidden" name="action" value="release">
                 <div class="modal-header">
-                    <h6 class="modal-title fw-bold"><i class="ti ti-circle-check text-success me-2"></i>Release Document to Resident</h6>
+                    <h6 class="modal-title fw-bold">
+                        <i class="ti ti-circle-check text-success me-2"></i>
+                        {{ $document->status === 'ready_for_pickup' ? 'Release Document to Resident' : 'Express Release Document to Resident' }}
+                    </h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    @if($document->status !== 'ready_for_pickup')
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size:12.5px">
+                            <i class="ti ti-bolt fs-5"></i>
+                            <div><strong>Express Release:</strong> Immediately completes and marks this document as released to the resident.</div>
+                        </div>
+                    @endif
                     <p class="small text-muted mb-3">
                         Confirm that <strong>{{ optional($document->resident)->full_name }}</strong> has personally claimed
                         <strong>{{ \App\Models\Document::TYPES[$document->document_type] ?? $document->document_type }}</strong>
                         ({{ $document->document_number }}) with a valid ID.
                     </p>
+
+                    {{-- Payment Warning in Release Modal if unpaid --}}
+                    @if(!$document->isPaidOrWaived())
+                        <div class="alert alert-warning py-2 px-3 mb-3" style="font-size:13px">
+                            <div class="fw-bold mb-1"><i class="ti ti-cash me-1"></i> Outstanding Fee: ₱{{ number_format($document->fee, 2) }}</div>
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="checkbox" name="confirm_cash_payment" value="1" id="confirmCashPayment" required>
+                                <label class="form-check-label fw-semibold" for="confirmCashPayment">
+                                    I confirm that cash payment of ₱{{ number_format($document->fee, 2) }} was collected on the counter.
+                                </label>
+                            </div>
+                        </div>
+                    @else
+                        <div class="alert alert-success py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size:12.5px">
+                            <i class="ti ti-circle-check fs-5"></i>
+                            <div>Payment verified &amp; cleared ({!! $document->payment_status_badge !!}).</div>
+                        </div>
+                    @endif
+
                     <label class="form-label" style="font-size:13px;font-weight:600">Release notes (optional)</label>
                     <textarea name="remarks" class="form-control" rows="2" placeholder="e.g. Claimed personally with PhilSys ID">{{ $document->remarks }}</textarea>
                 </div>
@@ -245,6 +397,63 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success btn-sm">
                         <i class="ti ti-circle-check me-1"></i>Confirm Release
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- View Proof Receipt Modal --}}
+@if($document->payment_proof)
+<div class="modal fade" id="viewProofModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold"><i class="ti ti-photo text-primary me-2"></i>Uploaded Payment Proof</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-3">
+                <img src="{{ asset('storage/' . $document->payment_proof) }}" alt="Receipt" style="max-height:480px;max-width:100%;object-fit:contain" class="rounded border shadow-sm">
+                @if($document->payment_reference)
+                    <div class="mt-2 text-muted small">
+                        Reference Number: <strong class="font-monospace text-dark">{{ $document->payment_reference }}</strong>
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer justify-content-between">
+                <a href="{{ asset('storage/' . $document->payment_proof) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="ti ti-external-link me-1"></i>Open Full Image
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Decline Payment Proof Modal --}}
+<div class="modal fade" id="declinePaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.documents.payment', $document) }}">
+                @csrf
+                <input type="hidden" name="action" value="decline">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="ti ti-x text-danger me-2"></i>Decline Payment Proof</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-2">
+                        State the reason why this payment proof is being declined. This explanation note will be immediately visible to the resident on their tracking portal so they can re-upload a valid proof.
+                    </p>
+                    <label class="form-label fw-semibold" style="font-size:13px">Reason / Explanation Note <span class="text-danger">*</span></label>
+                    <textarea name="payment_notes" class="form-control" rows="3" required placeholder="e.g. Reference number does not match transaction records, blurred receipt screenshot, incomplete payment amount..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="ti ti-x me-1"></i>Decline Payment Proof
                     </button>
                 </div>
             </form>
