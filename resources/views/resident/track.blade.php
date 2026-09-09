@@ -114,7 +114,7 @@
                             <div class="fw-bold text-danger"><i class="ti ti-alert-triangle me-1"></i> Payment Proof Declined by Staff</div>
                             <div class="mt-0.5" style="color:#7f1d1d"><strong>Note:</strong> {{ $doc->payment_notes ?: 'Payment reference or receipt could not be verified.' }}</div>
                         </div>
-                        <button type="button" class="btn btn-danger btn-xs py-1 px-2.5 fw-semibold" style="font-size:11.5px" data-bs-toggle="modal" data-bs-target="#uploadProofModal-{{ $doc->id }}" onclick="event.stopPropagation();">
+                        <button type="button" class="btn btn-danger btn-sm py-1 px-3 fw-semibold" style="font-size:11.5px" onclick="event.stopPropagation(); event.preventDefault(); new bootstrap.Modal(document.getElementById('uploadProofModal-{{ $doc->id }}')).show();">
                             <i class="ti ti-upload me-1"></i> Re-upload Proof
                         </button>
                     </div>
@@ -123,7 +123,7 @@
                         <div>
                             <i class="ti ti-cash me-1"></i> Fee: <strong>₱{{ number_format($doc->fee, 2) }}</strong> (Pay online via GCash or counter cash upon pickup)
                         </div>
-                        <button type="button" class="btn btn-navy btn-xs py-1 px-2.5 fw-semibold" style="font-size:11.5px" data-bs-toggle="modal" data-bs-target="#uploadProofModal-{{ $doc->id }}" onclick="event.stopPropagation();">
+                        <button type="button" class="btn btn-navy btn-sm py-1 px-3 fw-semibold" style="font-size:11.5px" onclick="event.stopPropagation(); event.preventDefault(); new bootstrap.Modal(document.getElementById('uploadProofModal-{{ $doc->id }}')).show();">
                             <i class="ti ti-device-mobile me-1"></i> Pay with GCash
                         </button>
                     </div>
@@ -428,14 +428,14 @@
                         <p class="mb-2 text-dark small">
                             Please check the reason given above and re-upload an accurate receipt screenshot with matching reference number.
                         </p>
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#uploadProofModal-{{ $doc->id }}" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="var m=bootstrap.Modal.getInstance(this.closest('.modal'));if(m)m.hide();setTimeout(function(){new bootstrap.Modal(document.getElementById('uploadProofModal-{{ $doc->id }}')).show();},300);">
                             <i class="ti ti-upload me-1"></i> Submit Corrected Payment Proof
                         </button>
                     </div>
                     @elseif($doc->payment_status === 'unpaid' && (float)$doc->fee > 0)
                     <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top flex-wrap gap-2">
                         <span class="text-muted small">Outstanding payment required to complete release.</span>
-                        <button type="button" class="btn btn-navy btn-sm" data-bs-toggle="modal" data-bs-target="#uploadProofModal-{{ $doc->id }}" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-navy btn-sm" onclick="var m=bootstrap.Modal.getInstance(this.closest('.modal'));if(m)m.hide();setTimeout(function(){new bootstrap.Modal(document.getElementById('uploadProofModal-{{ $doc->id }}')).show();},300);">
                             <i class="ti ti-device-mobile me-1"></i> Pay with GCash
                         </button>
                     </div>

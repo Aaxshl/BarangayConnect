@@ -56,6 +56,7 @@ class Setting extends Model {
         ],
         'Reports & Export Hub' => [
             'reports.view'          => 'View Reports & Statistics',
+            'reports.revenue'       => 'View Revenue & Financial Analytics',
             'reports.export_single' => 'Export Individual Reports (PDF/Excel)',
             'reports.export_zip'    => 'Download Batch ZIP Archive',
         ],
@@ -72,7 +73,7 @@ class Setting extends Model {
             'requests.assign' => true, 'requests.status' => true, 'requests.convert' => true, 'requests.delete' => false,
             'services.create' => true, 'services.edit' => true, 'services.assign' => true, 'services.status' => true,
             'announcements.create' => true, 'announcements.publish' => false, 'announcements.delete' => false,
-            'reports.view' => true, 'reports.export_single' => true, 'reports.export_zip' => true,
+            'reports.view' => true, 'reports.revenue' => true, 'reports.export_single' => true, 'reports.export_zip' => true,
         ],
         'councilor' => [
             'nav.residents' => true, 'nav.households' => true, 'nav.documents' => true,
@@ -84,7 +85,7 @@ class Setting extends Model {
             'requests.assign' => false, 'requests.status' => false, 'requests.convert' => false, 'requests.delete' => false,
             'services.create' => false, 'services.edit' => false, 'services.assign' => false, 'services.status' => false,
             'announcements.create' => false, 'announcements.publish' => false, 'announcements.delete' => false,
-            'reports.view' => true, 'reports.export_single' => false, 'reports.export_zip' => false,
+            'reports.view' => true, 'reports.revenue' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
         ],
         'staff' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
@@ -96,7 +97,7 @@ class Setting extends Model {
             'requests.assign' => false, 'requests.status' => true, 'requests.convert' => false, 'requests.delete' => false,
             'services.create' => false, 'services.edit' => false, 'services.assign' => false, 'services.status' => true,
             'announcements.create' => false, 'announcements.publish' => false, 'announcements.delete' => false,
-            'reports.view' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
+            'reports.view' => false, 'reports.revenue' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
         ],
         'sk_chairman' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
@@ -108,7 +109,7 @@ class Setting extends Model {
             'requests.assign' => false, 'requests.status' => false, 'requests.convert' => false, 'requests.delete' => false,
             'services.create' => false, 'services.edit' => false, 'services.assign' => false, 'services.status' => false,
             'announcements.create' => true, 'announcements.publish' => true, 'announcements.delete' => true,
-            'reports.view' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
+            'reports.view' => false, 'reports.revenue' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
         ],
         'sk_councilor' => [
             'nav.residents' => true, 'nav.households' => false, 'nav.documents' => false,
@@ -120,7 +121,7 @@ class Setting extends Model {
             'requests.assign' => false, 'requests.status' => false, 'requests.convert' => false, 'requests.delete' => false,
             'services.create' => false, 'services.edit' => false, 'services.assign' => false, 'services.status' => false,
             'announcements.create' => true, 'announcements.publish' => false, 'announcements.delete' => false,
-            'reports.view' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
+            'reports.view' => false, 'reports.revenue' => false, 'reports.export_single' => false, 'reports.export_zip' => false,
         ],
     ];
 

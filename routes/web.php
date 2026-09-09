@@ -105,6 +105,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
     Route::middleware('role:captain,administrator,secretary')->group(function () {
         Route::get('/reports/export/{type}/{format}', [ReportController::class, 'export'])->name('reports.export');
         Route::post('/reports/export-zip', [ReportController::class, 'exportZip'])->name('reports.export.zip');
+        Route::get('/reports/revenue/export', [ReportController::class, 'exportRevenue'])->name('reports.revenue.export');
     });
 
     // Announcements
@@ -129,6 +130,7 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
         Route::put('/settings/permissions', [SettingController::class, 'updatePermissions'])->name('settings.permissions');
         Route::post('/settings/permissions/reset', [SettingController::class, 'resetPermissions'])->name('settings.permissions.reset');
         Route::put('/settings/brackets', [SettingController::class, 'updateAgeBrackets'])->name('settings.brackets');
+        Route::post('/settings/brackets/reset', [SettingController::class, 'resetAgeBrackets'])->name('settings.brackets.reset');
         Route::post('/settings/logo', [SettingController::class, 'uploadLogo'])->name('settings.logo');
         Route::put('/settings/fees', [SettingController::class, 'updateDocumentFees'])->name('settings.fees');
         Route::post('/settings/fees/reset', [SettingController::class, 'resetDocumentFees'])->name('settings.fees.reset');
